@@ -1,11 +1,15 @@
 package com.example.servix_app
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -20,6 +24,8 @@ import com.squareup.picasso.Picasso
 import java.util.*
 
 class RegisterActivity : AppCompatActivity() {
+
+    private lateinit var loadingDialog: Dialog
     private lateinit var auth: FirebaseAuth
     private lateinit var signInClient: SignInClient
     private lateinit var imageView: ImageView
@@ -75,6 +81,7 @@ class RegisterActivity : AppCompatActivity() {
         val registerButton: Button = findViewById(R.id.register_button)
         val goToLogin: TextView = findViewById(R.id.register_signin_textView)
         val googleRegister: LinearLayout = findViewById(R.id.google_layout)
+        loadingDialog = createLoadingDialog(this)
 
         imageView = findViewById(R.id.plusIcon_imageView)
 
@@ -84,6 +91,7 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         registerButton.setOnClickListener {
+            loadingDialog.show()
             if (email.text.toString().isEmpty() || password.text.toString().isEmpty()) {
                 Toast.makeText(this, "Email and password cannot be empty", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -97,6 +105,7 @@ class RegisterActivity : AppCompatActivity() {
             auth.createUserWithEmailAndPassword(email.text.toString(), password.text.toString())
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
+                        loadingDialog.dismiss()
                         val user = auth.currentUser
                         val emailText = email.text.toString()
                         val name = emailText.substringBefore("@")
@@ -120,6 +129,7 @@ class RegisterActivity : AppCompatActivity() {
                                     finish()
                                 }
                                 .addOnFailureListener {
+                                    loadingDialog.dismiss()
                                     Toast.makeText(baseContext, "Failed to register user.", Toast.LENGTH_SHORT).show()
                                 }
                         }
@@ -138,6 +148,18 @@ class RegisterActivity : AppCompatActivity() {
         googleRegister.setOnClickListener {
             startGoogleSignIn()
         }
+    }
+
+    private fun createLoadingDialog(context: Context): Dialog {
+        val builder = AlertDialog.Builder(context)
+        val inflater = LayoutInflater.from(context)
+        val dialogView = inflater.inflate(R.layout.loading_dialog, null)
+        builder.setView(dialogView)
+        builder.setCancelable(false)
+
+        val dialog = builder.create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        return dialog
     }
 
     private fun startGoogleSignIn() {

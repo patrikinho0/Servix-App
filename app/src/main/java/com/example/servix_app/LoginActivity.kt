@@ -1,7 +1,11 @@
 package com.example.servix_app
 
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -16,6 +20,7 @@ import java.util.*
 
 class LoginActivity : AppCompatActivity() {
 
+    private lateinit var loadingDialog: Dialog
     private lateinit var auth: FirebaseAuth
     private lateinit var signInClient: SignInClient
 
@@ -32,8 +37,11 @@ class LoginActivity : AppCompatActivity() {
         val signUpTextView: TextView = findViewById(R.id.login_signup_textView)
         val forgotPasswordTextView: TextView = findViewById(R.id.login_forgotPass_textView)
         val googleLogin: LinearLayout = findViewById(R.id.google_layout)
+        loadingDialog = createLoadingDialog(this)
 
         loginButton.setOnClickListener {
+            loadingDialog.show()
+
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
 
@@ -71,6 +79,18 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private fun createLoadingDialog(context: Context): Dialog {
+        val builder = AlertDialog.Builder(context)
+        val inflater = LayoutInflater.from(context)
+        val dialogView = inflater.inflate(R.layout.loading_dialog, null)
+        builder.setView(dialogView)
+        builder.setCancelable(false)
+
+        val dialog = builder.create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        return dialog
+    }
+
     private fun startGoogleSignIn() {
         val signInRequest = BeginSignInRequest.builder()
             .setGoogleIdTokenRequestOptions(
@@ -99,11 +119,13 @@ class LoginActivity : AppCompatActivity() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
+                    loadingDialog.dismiss()
                     val user = auth.currentUser
                     val mainIntent = Intent(this, MainActivity::class.java)
                     startActivity(mainIntent)
                     finish()
                 } else {
+                    loadingDialog.dismiss()
                     Toast.makeText(
                         baseContext, "Authentication failed: ${task.exception?.message}",
                         Toast.LENGTH_SHORT
