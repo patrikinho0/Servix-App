@@ -1,49 +1,59 @@
-# Servix - On-Demand Service Marketplace
+# Servix - On-Demand Service Marketplace 🚀
 
 ![Servix Logo](https://github.com/user-attachments/assets/13af8dfc-801f-4df1-b2a9-726d01103cef)
 
-Servix is an Android application that connects users with local experts for various services. Whether you need help moving furniture, repairing appliances, or hiring a professional, Servix allows users to post service requests or browse expert profiles directly. Experts can showcase their skills and get hired through the platform.
+Servix connects users with local professionals for all kinds of services! Whether you need help moving furniture, fixing something around the house, or hiring a skilled expert, Servix makes it easy to find and hire someone nearby.
 
 ---
 
-## Features
+## Features 🌟
 
-### Core Functionality
+### Core Functionality 🛠️
 - **User Authentication**  
-  Secure sign-up/login using **Firebase Authentication** (Email/Password).
+  Secure sign-up/login with **Firebase Authentication** (Email/Password).
+  
 - **Service Listings**  
-  Users can post, edit, or delete service requests (e.g., "Need a plumber").
-- **Expert Profiles**  
-  Experts create profiles with descriptions, expertise, and ratings.
-- **Search & Filter**  
-  Find services/experts by **category**, **location**, or **rating**.
-- **Reviews & Ratings**  
-  Rate and review completed services to build trust.
-- **Liked Services**  
-  Users can "like" posts to boost visibility.
+  Post, edit, or delete your service requests (e.g., "Need a plumber").
 
-### Additional Features
+- **Expert Profiles**  
+  Experts can create detailed profiles showcasing their skills, expertise, and ratings.
+
+- **Search & Filter**  
+  Quickly find services or experts by **category**, **location**, or **rating**.
+
+- **Reviews & Ratings**  
+  After service completion, rate and review experts to build trust within the community.
+
+- **Liked Services**  
+  Boost visibility by "liking" service posts.
+
+### Additional Features 🚀
 - **Reporting System**  
-  Flag inappropriate content or users.
+  Flag inappropriate content or users to maintain a safe platform.
+
 - **Account Deletion**  
-  Users can permanently delete accounts.
-- **Notifications** *(Planned)*  
-  Firebase Cloud Messaging (FCM) for alerts.
+  Permanently delete accounts with ease.
+
+- **Notifications** *(Coming Soon)*  
+  Stay up to date with Firebase Cloud Messaging (FCM) alerts.
+
 - **Google Maps Integration** *(Planned)*  
-  Location-based searches and navigation.
+  Use maps for location-based searches and navigation.
 
 ---
 
-## Tech Stack
-- **Language**: Kotlin  
+## Tech Stack 🖥️
+
+- **Programming Language**: Kotlin  
 - **Backend**: Firebase  
   - Authentication  
   - Firestore (NoSQL database)  
-  - Storage (for user/announcement images)  
+  - Storage (for user and service images)  
 
 ---
 
-## Firestore Database Structure
+## Firestore Database Structure 🗂️
+
 | Collection       | Key Fields                                                                 |
 |------------------|---------------------------------------------------------------------------|
 | **Users**        | `id`, `name`, `email`, `profilePictureUrl`, `role` ("user" or "expert")   |
@@ -54,20 +64,22 @@ Servix is an Android application that connects users with local experts for vari
 
 ---
 
-## UML Diagram (Data Model)
+## UML Diagram (Data Model) 📊  
 ![SERVIX-UML-DIAGRAM-PNG](https://github.com/user-attachments/assets/1af5f6ae-49a2-4b37-94e6-ac6863d9d0bc)
 
 ---
 
-## Installation
-### Prerequisites
+## Installation ⚙️
+
+### Prerequisites 📋
 - Android Studio (latest version)
 - Firebase project with **Authentication** and **Firestore** enabled.
 
-### Steps
+### Setup Steps 📝
 1. Clone the repository:
    ```sh
    git clone https://github.com/yourusername/servix-android.git
+
 2. Open the project in Android Studio.
 3. Add your **google-services.json** file (from Firebase) to **app/**.
 4. Build and run the app on an emulator or device.
@@ -76,14 +88,14 @@ Servix is an Android application that connects users with local experts for vari
 
 ### **Part 4: Screenshots & Contributing**
 
-## Screenshots *(To be implemented)*
+## Screenshots 📸 *(Coming soon)*
 | Login Screen | Service Feed | Expert Profile |
 |--------------|--------------|----------------|
 | ![Login](https://via.placeholder.com/200) | ![Feed](https://via.placeholder.com/200) | ![Profile](https://via.placeholder.com/200) |
 
 ---
 
-## Contributing
+## Contributing 🤝
 1. Fork the project.  
 2. Create a branch (`git checkout -b feature/your-feature`).  
 3. Commit changes (`git commit -m 'Add some feature'`).  
@@ -92,7 +104,7 @@ Servix is an Android application that connects users with local experts for vari
 
 ---
 
-**Questions?**  
+**Questions?** 🤔
 Contact [patryk61222@gmail.com] or open an issue in the repository.
 
 <br><br>
