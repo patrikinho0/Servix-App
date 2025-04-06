@@ -3,7 +3,6 @@ package com.example.servix_app
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -13,27 +12,24 @@ import androidx.core.view.get
 import androidx.core.view.size
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-
-class MainActivity : AppCompatActivity() {
-    var selectedItemId: Int = R.id.services
+class ExpertsActivity : AppCompatActivity() {
+    private var selectedItemId: Int = R.id.services
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_experts)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        val loginButton: Button = findViewById(R.id.goToLogin_button)
-        val registerButton: Button = findViewById(R.id.goToRegister_button)
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
 
-        selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
-
+        selectedItemId = intent.getIntExtra("selected_item_id", R.id.services)
         bottomNavigationView.selectedItemId = selectedItemId
+
         bottomNavigationView.setOnItemSelectedListener { item ->
             selectedItemId = item.itemId
             val intent = when (item.itemId) {
@@ -49,22 +45,11 @@ class MainActivity : AppCompatActivity() {
             return@setOnItemSelectedListener true
         }
         updateNavItemStyle(bottomNavigationView)
-
-        loginButton.setOnClickListener {
-            val loginIntent = Intent(this, LoginActivity::class.java)
-            startActivity(loginIntent)
-            finish()
-        }
-        registerButton.setOnClickListener {
-            val registerIntent = Intent(this, RegisterActivity::class.java)
-            startActivity(registerIntent)
-            finish()
-        }
     }
 
     private fun updateNavItemStyle(bottomNavigationView: BottomNavigationView) {
         for (i in 0 until bottomNavigationView.menu.size) {
-            val item = bottomNavigationView.menu.getItem(i)
+            val item = bottomNavigationView.menu[i]
             val itemView = bottomNavigationView.findViewById<View>(item.itemId)
             val textView = itemView?.findViewById<TextView>(android.R.id.title)
 
