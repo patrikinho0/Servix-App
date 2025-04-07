@@ -11,11 +11,13 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.get
 import androidx.core.view.size
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 
 class MainActivity : AppCompatActivity() {
-    var selectedItemId: Int = R.id.services
+    private var selectedItemId: Int = R.id.services
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,8 +29,16 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val loginButton: Button = findViewById(R.id.goToLogin_button)
-        val registerButton: Button = findViewById(R.id.goToRegister_button)
+        val announcements = mutableListOf(
+            Announcement("https://firebasestorage.googleapis.com/v0/b/crud-90e1f.appspot.com/o/service_images%2F499ab01e-eea4-43e7-a1ff-6053a1cab58a?alt=media&token=3eca8883-99a9-4c16-8cfe-968a477a8dcb", "Need help!", "Active", "Zgierz", "07-04-2025")
+        )
+
+        val myAdapter = MyAdapter(announcements)
+        val myRecyclerView: RecyclerView = findViewById(R.id.recyclerView)
+        myRecyclerView.adapter = myAdapter
+
+        myRecyclerView.layoutManager = LinearLayoutManager(this)
+
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
 
         selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
@@ -49,22 +59,11 @@ class MainActivity : AppCompatActivity() {
             return@setOnItemSelectedListener true
         }
         updateNavItemStyle(bottomNavigationView)
-
-        loginButton.setOnClickListener {
-            val loginIntent = Intent(this, LoginActivity::class.java)
-            startActivity(loginIntent)
-            finish()
-        }
-        registerButton.setOnClickListener {
-            val registerIntent = Intent(this, RegisterActivity::class.java)
-            startActivity(registerIntent)
-            finish()
-        }
     }
 
     private fun updateNavItemStyle(bottomNavigationView: BottomNavigationView) {
         for (i in 0 until bottomNavigationView.menu.size) {
-            val item = bottomNavigationView.menu.getItem(i)
+            val item = bottomNavigationView.menu[i]
             val itemView = bottomNavigationView.findViewById<View>(item.itemId)
             val textView = itemView?.findViewById<TextView>(android.R.id.title)
 
