@@ -19,4 +19,7 @@
     <string name="notifications">Notifications</string>
     <string name="profile">Profile</string>
     <string name="selected_image">Selected Image</string>
+    <string name="button_text">Button Text</string>
+    <string name="help_amp_contact"><![CDATA[Help & Contact]]></string>
+    <string name="settings">Settings</string>
 </resources>
