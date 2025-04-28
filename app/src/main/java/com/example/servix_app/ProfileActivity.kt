@@ -1,36 +1,31 @@
 package com.example.servix_app
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.get
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
 import androidx.core.view.size
+import androidx.core.net.toUri
 
 class ProfileActivity : AppCompatActivity() {
 
     private val auth = FirebaseAuth.getInstance()
-    private val firestore = FirebaseFirestore.getInstance()
-    private val storage = FirebaseStorage.getInstance()
 
     private lateinit var greetingTextView: TextView
     private lateinit var profileImageView: ImageView
-    private lateinit var logoutButton: View
     private var selectedItemId: Int = R.id.services
 
     private lateinit var accountInfoButton: AppCompatButton
@@ -41,6 +36,12 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var contactButton: AppCompatButton
     private lateinit var faqButton: AppCompatButton
     private lateinit var regulationsButton: AppCompatButton
+    private lateinit var privacyPolicyButton: AppCompatButton
+    private lateinit var cookieFilesSettingsButton: AppCompatButton
+    private lateinit var rateServixButton: AppCompatButton
+    private lateinit var aboutAppButton: AppCompatButton
+    private lateinit var licensesButton: AppCompatButton
+    private lateinit var logoutButton: AppCompatButton
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,17 +55,22 @@ class ProfileActivity : AppCompatActivity() {
             insets
         }
 
+        greetingTextView = findViewById(R.id.profile_greetings_textView)
+        profileImageView = findViewById(R.id.profile_picture_imageView)
+
         accountInfoButton = findViewById(R.id.account_info_button)
-        appSettingsButton = findViewById(R.id.app_settings_button)
+        appSettingsButton = findViewById(R.id.application_settings_button)
         notificationsButton = findViewById(R.id.notifications_button)
         likedServicesButton = findViewById(R.id.liked_services_button)
         becomeExpertButton = findViewById(R.id.become_expert_button)
         contactButton = findViewById(R.id.contact_button)
         faqButton = findViewById(R.id.faq_button)
         regulationsButton = findViewById(R.id.regulations_button)
-
-        greetingTextView = findViewById(R.id.profile_greetings_textView)
-        profileImageView = findViewById(R.id.profile_picture_imageView)
+        privacyPolicyButton = findViewById(R.id.privacy_policy_button)
+        cookieFilesSettingsButton = findViewById(R.id.cookie_files_settings_button)
+        rateServixButton = findViewById(R.id.rate_servix_button)
+        aboutAppButton = findViewById(R.id.about_app_button)
+        licensesButton = findViewById(R.id.licenses_button)
         logoutButton = findViewById(R.id.logout_button)
 
         setupBottomNavigation()
@@ -112,7 +118,7 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun loadUserInfo() {
         val user = FirebaseAuth.getInstance().currentUser ?: return
-        val db = Firebase.firestore
+        val db = FirebaseFirestore.getInstance()
         val userDocRef = db.collection("users").document(user.uid)
 
         userDocRef.get()
@@ -147,11 +153,11 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         accountInfoButton.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, AccountInfoActivity::class.java))
         }
 
         appSettingsButton.setOnClickListener {
-            Toast.makeText(this, "App Settings clicked", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, AppSettingsActivity::class.java))
         }
 
         notificationsButton.setOnClickListener {
@@ -159,27 +165,85 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         likedServicesButton.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, ServicesActivity::class.java))
         }
 
         becomeExpertButton.setOnClickListener {
-            Toast.makeText(this, "Become Expert clicked", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, ExpertsActivity::class.java))
         }
 
         contactButton.setOnClickListener {
             val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("mailto:support@servix.com")
+                data = "mailto:support@servix.com".toUri()
                 putExtra(Intent.EXTRA_SUBJECT, "Support Request")
             }
             startActivity(emailIntent)
         }
 
         faqButton.setOnClickListener {
-            Toast.makeText(this, "FAQ clicked", Toast.LENGTH_SHORT).show()
+            val formUrl = "https://forms.gle/tfVmoPb6D8wwm3LT7"
+            val intent = Intent(Intent.ACTION_VIEW, formUrl.toUri())
+            startActivity(intent)
+        }
+
+        privacyPolicyButton.setOnClickListener {
+            val docUrl = "https://docs.google.com/document/d/1jwtkceDzdHQJTOFAwKMj8_CDtpFyJxD4oGuyiQQFSbE/edit?usp=sharing"
+            val intent = Intent(Intent.ACTION_VIEW, docUrl.toUri())
+            startActivity(intent)
         }
 
         regulationsButton.setOnClickListener {
-            Toast.makeText(this, "Terms & Regulations clicked", Toast.LENGTH_SHORT).show()
+            val docUrl = "https://docs.google.com/document/d/1jwtkceDzdHQJTOFAwKMj8_CDtpFyJxD4oGuyiQQFSbE/edit?usp=sharing"
+            val intent = Intent(Intent.ACTION_VIEW, docUrl.toUri())
+            startActivity(intent)
+        }
+
+        cookieFilesSettingsButton.setOnClickListener {
+            val options = arrayOf("Yeah, no problem", "No, please don't")
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Should we collect your cookies?")
+            builder.setItems(options) { dialog, which ->
+                when (which) {
+                    0 -> {
+                        handleCookieConsent(true)
+                    }
+                    1 -> {
+                        handleCookieConsent(false)
+                    }
+                }
+            }
+            builder.setCancelable(true)
+            builder.show()
+        }
+
+        rateServixButton.setOnClickListener {
+            val appPackageName = packageName
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW,
+                    "market://details?id=$appPackageName".toUri()))
+            } catch (e: android.content.ActivityNotFoundException) {
+                startActivity(Intent(Intent.ACTION_VIEW,
+                    "https://play.google.com/store/apps/details?id=$appPackageName".toUri()))
+            }
+        }
+
+        aboutAppButton.setOnClickListener {
+            val docUrl = "https://docs.google.com/document/d/18KASSuFusblEackAFyhiDn2C8uSbVv2qqIqM98S3aJ4/edit?usp=sharing"
+            val intent = Intent(Intent.ACTION_VIEW, docUrl.toUri())
+            startActivity(intent)
+        }
+
+        licensesButton.setOnClickListener {
+            val docUrl = "https://docs.google.com/document/d/18KASSuFusblEackAFyhiDn2C8uSbVv2qqIqM98S3aJ4/edit?usp=sharing"
+            val intent = Intent(Intent.ACTION_VIEW, docUrl.toUri())
+            startActivity(intent)
+        }
+    }
+    private fun handleCookieConsent(consentGiven: Boolean) {
+        if (consentGiven) {
+            Toast.makeText(this, "You agreed to cookie collection", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "You declined cookie collection", Toast.LENGTH_SHORT).show()
         }
     }
 }
