@@ -2,6 +2,7 @@ package com.example.servix_app
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
@@ -10,11 +11,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.appcompat.widget.AppCompatButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.view.get
 import androidx.core.view.size
+import com.example.servix_app.NotificationsActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class AppSettingsActivity : AppCompatActivity() {
@@ -72,44 +75,82 @@ class AppSettingsActivity : AppCompatActivity() {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
-
-        setupBottomNavigation()
+        selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
+        setupCustomBottomNav()
     }
-    private fun setupBottomNavigation() {
-        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
+    private fun setupCustomBottomNav() {
+        val navHome = findViewById<View>(R.id.navHome)
+        val navServices = findViewById<View>(R.id.navServices)
+        val navExperts = findViewById<View>(R.id.navExperts)
+        val navNotifications = findViewById<View>(R.id.navNotifications)
+        val navProfile = findViewById<View>(R.id.navProfile)
 
-        selectedItemId = intent.getIntExtra("selected_item_id", R.id.services)
-        bottomNavigationView.selectedItemId = selectedItemId
+        val homeText = findViewById<TextView>(R.id.navHome_textView)
+        val servicesText = findViewById<TextView>(R.id.navServices_textView)
+        val expertsText = findViewById<TextView>(R.id.navExperts_textView)
+        val notificationsText = findViewById<TextView>(R.id.navNotify_textView)
+        val profileText = findViewById<TextView>(R.id.navProfile_textView)
 
-        bottomNavigationView.setOnItemSelectedListener { item ->
-            if (item.itemId == selectedItemId) return@setOnItemSelectedListener true
+        val allTexts = listOf(homeText, servicesText, expertsText, notificationsText, profileText)
 
-            selectedItemId = item.itemId
-            val intent = when (item.itemId) {
-                R.id.home -> Intent(this, MainActivity::class.java)
-                R.id.services -> Intent(this, ServicesActivity::class.java)
-                R.id.experts -> Intent(this, ExpertsActivity::class.java)
-                R.id.notifications -> Intent(this, NotificationsActivity::class.java)
-                R.id.profile -> return@setOnItemSelectedListener true
-                else -> return@setOnItemSelectedListener false
+        allTexts.forEach { text ->
+            text.setTypeface(null, Typeface.NORMAL)
+            text.setTextColor(ContextCompat.getColor(this, R.color.grey))
+        }
+
+        when (selectedItemId) {
+            R.id.home -> homeText.setBoldActive()
+            R.id.services -> servicesText.setBoldActive()
+            R.id.experts -> expertsText.setBoldActive()
+            R.id.notifications -> notificationsText.setBoldActive()
+            R.id.profile -> profileText.setBoldActive()
+        }
+
+        navHome.setOnClickListener {
+            if (selectedItemId != R.id.home) {
+                startActivity(Intent(this, MainActivity::class.java)
+                    .putExtra("selected_item_id", R.id.home))
             }
-            intent.putExtra("selected_item_id", selectedItemId)
-            startActivity(intent)
-            true
         }
 
-        updateNavItemStyle(bottomNavigationView)
+        navServices.setOnClickListener {
+            if (selectedItemId != R.id.services) {
+                startActivity(Intent(this, ServicesActivity::class.java)
+                    .putExtra("selected_item_id", R.id.services))
+            }
+        }
+
+        navExperts.setOnClickListener {
+            if (selectedItemId != R.id.experts) {
+                startActivity(Intent(this, ExpertsActivity::class.java)
+                    .putExtra("selected_item_id", R.id.experts))
+            }
+        }
+
+        navNotifications.setOnClickListener {
+            if (selectedItemId != R.id.notifications) {
+                startActivity(Intent(this, NotificationsActivity::class.java)
+                    .putExtra("selected_item_id", R.id.notifications))
+            }
+        }
+
+        navProfile.setOnClickListener {
+            if (selectedItemId != R.id.profile) {
+                startActivity(Intent(this, ProfileActivity::class.java)
+                    .putExtra("selected_item_id", R.id.profile))
+            }
+        }
     }
 
-    private fun updateNavItemStyle(bottomNavigationView: BottomNavigationView) {
-        for (i in 0 until bottomNavigationView.menu.size) {
-            val item = bottomNavigationView.menu[i]
-            val itemView = bottomNavigationView.findViewById<View>(item.itemId)
-            val textView = itemView?.findViewById<TextView>(android.R.id.title)
-            textView?.setTextAppearance(
-                this,
-                if (item.isChecked) R.style.BottomNavTextSelected else R.style.BottomNavTextUnselected
-            )
-        }
+    private fun TextView.setBoldActive() {
+        setTypeface(null, Typeface.BOLD)
+        setTextColor(ContextCompat.getColor(this@AppSettingsActivity, R.color.black))
+        textSize = 14f
+    }
+
+    override fun onBackPressed() {
+        startActivity(Intent(this, ProfileActivity::class.java)
+            .putExtra("selected_item_id", R.id.profile))
+        super.onBackPressed()
     }
 }

@@ -1,6 +1,7 @@
 package com.example.servix_app
 
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -10,15 +11,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.get
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.servix_app.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
-import androidx.core.view.size
-import androidx.core.net.toUri
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -42,7 +42,6 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var aboutAppButton: AppCompatButton
     private lateinit var licensesButton: AppCompatButton
     private lateinit var logoutButton: AppCompatButton
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,47 +72,82 @@ class ProfileActivity : AppCompatActivity() {
         licensesButton = findViewById(R.id.licenses_button)
         logoutButton = findViewById(R.id.logout_button)
 
-        setupBottomNavigation()
+        selectedItemId = intent.getIntExtra("selected_item_id", R.id.services)
+
+        setupCustomBottomNav()
         loadUserInfo()
         setupButtonListeners()
     }
 
-    private fun setupBottomNavigation() {
-        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
+    private fun setupCustomBottomNav() {
+        val navHome = findViewById<View>(R.id.navHome)
+        val navServices = findViewById<View>(R.id.navServices)
+        val navExperts = findViewById<View>(R.id.navExperts)
+        val navNotifications = findViewById<View>(R.id.navNotifications)
+        val navProfile = findViewById<View>(R.id.navProfile)
 
-        selectedItemId = intent.getIntExtra("selected_item_id", R.id.services)
-        bottomNavigationView.selectedItemId = selectedItemId
+        val homeText = findViewById<TextView>(R.id.navHome_textView)
+        val servicesText = findViewById<TextView>(R.id.navServices_textView)
+        val expertsText = findViewById<TextView>(R.id.navExperts_textView)
+        val notificationsText = findViewById<TextView>(R.id.navNotify_textView)
+        val profileText = findViewById<TextView>(R.id.navProfile_textView)
 
-        bottomNavigationView.setOnItemSelectedListener { item ->
-            if (item.itemId == selectedItemId) return@setOnItemSelectedListener true
+        val allTexts = listOf(homeText, servicesText, expertsText, notificationsText, profileText)
 
-            selectedItemId = item.itemId
-            val intent = when (item.itemId) {
-                R.id.home -> Intent(this, MainActivity::class.java)
-                R.id.services -> Intent(this, ServicesActivity::class.java)
-                R.id.experts -> Intent(this, ExpertsActivity::class.java)
-                R.id.notifications -> Intent(this, NotificationsActivity::class.java)
-                R.id.profile -> return@setOnItemSelectedListener true
-                else -> return@setOnItemSelectedListener false
-            }
-            intent.putExtra("selected_item_id", selectedItemId)
-            startActivity(intent)
-            true
+        allTexts.forEach { text ->
+            text.setTypeface(null, Typeface.NORMAL)
+            text.setTextColor(ContextCompat.getColor(this, R.color.grey))
         }
 
-        updateNavItemStyle(bottomNavigationView)
+        when (selectedItemId) {
+            R.id.home -> homeText.setBoldActive()
+            R.id.services -> servicesText.setBoldActive()
+            R.id.experts -> expertsText.setBoldActive()
+            R.id.notifications -> notificationsText.setBoldActive()
+            R.id.profile -> profileText.setBoldActive()
+            else -> {}
+        }
+
+        navHome.setOnClickListener {
+            if (selectedItemId != R.id.home) {
+                startActivity(Intent(this, MainActivity::class.java)
+                    .putExtra("selected_item_id", R.id.home))
+            }
+        }
+
+        navServices.setOnClickListener {
+            if (selectedItemId != R.id.services) {
+                startActivity(Intent(this, ServicesActivity::class.java)
+                    .putExtra("selected_item_id", R.id.services))
+            }
+        }
+
+        navExperts.setOnClickListener {
+            if (selectedItemId != R.id.experts) {
+                startActivity(Intent(this, ExpertsActivity::class.java)
+                    .putExtra("selected_item_id", R.id.experts))
+            }
+        }
+
+        navNotifications.setOnClickListener {
+            if (selectedItemId != R.id.notifications) {
+                startActivity(Intent(this, NotificationsActivity::class.java)
+                    .putExtra("selected_item_id", R.id.notifications))
+            }
+        }
+
+        navProfile.setOnClickListener {
+            if (selectedItemId != R.id.profile) {
+                startActivity(Intent(this, ProfileActivity::class.java)
+                    .putExtra("selected_item_id", R.id.profile))
+            }
+        }
     }
 
-    private fun updateNavItemStyle(bottomNavigationView: BottomNavigationView) {
-        for (i in 0 until bottomNavigationView.menu.size) {
-            val item = bottomNavigationView.menu[i]
-            val itemView = bottomNavigationView.findViewById<View>(item.itemId)
-            val textView = itemView?.findViewById<TextView>(android.R.id.title)
-            textView?.setTextAppearance(
-                this,
-                if (item.isChecked) R.style.BottomNavTextSelected else R.style.BottomNavTextUnselected
-            )
-        }
+    private fun TextView.setBoldActive() {
+        setTypeface(null, Typeface.BOLD)
+        setTextColor(ContextCompat.getColor(this@ProfileActivity, R.color.black))
+        textSize = 14f
     }
 
     private fun loadUserInfo() {
@@ -127,10 +161,7 @@ class ProfileActivity : AppCompatActivity() {
                     val name = document.getString("name") ?: "Unknown"
                     val profileImageUrl = document.getString("profilePictureUrl")
 
-                    val usernameTextView: TextView = findViewById(R.id.profile_greetings_textView)
-                    val profileImageView: ImageView = findViewById(R.id.profile_picture_imageView)
-
-                    usernameTextView.text = "Hey, $name"
+                    greetingTextView.text = "Hey, $name"
 
                     profileImageUrl?.let { url ->
                         Picasso.get().load(url).into(profileImageView)
@@ -149,27 +180,31 @@ class ProfileActivity : AppCompatActivity() {
             auth.signOut()
             Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, LoginActivity::class.java))
-            finish()
         }
 
         accountInfoButton.setOnClickListener {
-            startActivity(Intent(this, AccountInfoActivity::class.java))
+            startActivity(Intent(this, AccountInfoActivity::class.java)
+                .putExtra("selected_item_id", -1))
         }
 
         appSettingsButton.setOnClickListener {
-            startActivity(Intent(this, AppSettingsActivity::class.java))
+            startActivity(Intent(this, AppSettingsActivity::class.java)
+                .putExtra("selected_item_id", -1))
         }
 
         notificationsButton.setOnClickListener {
-            startActivity(Intent(this, NotificationsActivity::class.java))
+            startActivity(Intent(this, NotificationsActivity::class.java)
+                .putExtra("selected_item_id", R.id.notifications))
         }
 
         likedServicesButton.setOnClickListener {
-            startActivity(Intent(this, ServicesActivity::class.java))
+            startActivity(Intent(this, ServicesActivity::class.java)
+                .putExtra("selected_item_id", R.id.services))
         }
 
         becomeExpertButton.setOnClickListener {
-            startActivity(Intent(this, ExpertsActivity::class.java))
+            startActivity(Intent(this, ExpertsActivity::class.java)
+                .putExtra("selected_item_id", R.id.experts))
         }
 
         contactButton.setOnClickListener {
@@ -204,12 +239,8 @@ class ProfileActivity : AppCompatActivity() {
             builder.setTitle("Should we collect your cookies?")
             builder.setItems(options) { dialog, which ->
                 when (which) {
-                    0 -> {
-                        handleCookieConsent(true)
-                    }
-                    1 -> {
-                        handleCookieConsent(false)
-                    }
+                    0 -> handleCookieConsent(true)
+                    1 -> handleCookieConsent(false)
                 }
             }
             builder.setCancelable(true)
@@ -219,11 +250,9 @@ class ProfileActivity : AppCompatActivity() {
         rateServixButton.setOnClickListener {
             val appPackageName = packageName
             try {
-                startActivity(Intent(Intent.ACTION_VIEW,
-                    "market://details?id=$appPackageName".toUri()))
+                startActivity(Intent(Intent.ACTION_VIEW, "market://details?id=$appPackageName".toUri()))
             } catch (e: android.content.ActivityNotFoundException) {
-                startActivity(Intent(Intent.ACTION_VIEW,
-                    "https://play.google.com/store/apps/details?id=$appPackageName".toUri()))
+                startActivity(Intent(Intent.ACTION_VIEW, "https://play.google.com/store/apps/details?id=$appPackageName".toUri()))
             }
         }
 
@@ -239,11 +268,18 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
+
     private fun handleCookieConsent(consentGiven: Boolean) {
         if (consentGiven) {
             Toast.makeText(this, "You agreed to cookie collection", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "You declined cookie collection", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onBackPressed() {
+        startActivity(Intent(this, MainActivity::class.java)
+            .putExtra("selected_item_id", R.id.home))
+        super.onBackPressed()
     }
 }

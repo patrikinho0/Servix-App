@@ -13,6 +13,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.ktx.Firebase
 import com.google.android.gms.auth.api.identity.*
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
@@ -23,6 +24,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var loadingDialog: Dialog
     private lateinit var auth: FirebaseAuth
     private lateinit var signInClient: SignInClient
+    private val db = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,11 +150,37 @@ class LoginActivity : AppCompatActivity() {
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 val user = auth.currentUser
-                                val mainIntent = Intent(this, MainActivity::class.java)
-                                startActivity(mainIntent)
-                                finish()
-                            } else {
-                                Toast.makeText(this, "Google Sign-In failed", Toast.LENGTH_SHORT).show()
+                                val userDocRef = db.collection("users").document(user?.uid ?: "null")
+
+                                userDocRef.get().addOnSuccessListener { document ->
+                                    if (!document.exists()) {
+                                        val userData = hashMapOf(
+                                            "name" to (user?.displayName ?: "Unknown"),
+                                            "email" to (user?.email ?: ""),
+                                            "role" to "user",
+                                            "uid" to (user?.uid ?: "null"),
+                                            "profilePictureUrl" to (user?.photoUrl?.toString() ?: ""),
+                                            "likedServices" to listOf<String>()
+                                        )
+
+                                        userDocRef.set(userData)
+                                            .addOnSuccessListener {
+                                                val intent = Intent(this, MainActivity::class.java)
+                                                startActivity(intent)
+                                                finish()
+                                            }
+                                            .addOnFailureListener {
+                                                Toast.makeText(this, "Failed to save user data.", Toast.LENGTH_SHORT).show()
+                                            }
+                                    } else {
+                                        val intent = Intent(this, MainActivity::class.java)
+                                        startActivity(intent)
+                                        finish()
+                                    }
+                                }.addOnFailureListener {
+                                    Toast.makeText(this, "Failed to check user data.", Toast.LENGTH_SHORT).show()
+                                }
+
                             }
                         }
                 }
