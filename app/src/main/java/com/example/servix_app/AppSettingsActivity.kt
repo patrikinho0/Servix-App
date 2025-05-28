@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
-import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
@@ -15,10 +14,6 @@ import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import androidx.core.content.edit
 import androidx.core.net.toUri
-import androidx.core.view.get
-import androidx.core.view.size
-import com.example.servix_app.NotificationsActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class AppSettingsActivity : AppCompatActivity() {
 
@@ -79,6 +74,7 @@ class AppSettingsActivity : AppCompatActivity() {
         setupCustomBottomNav()
     }
     private fun setupCustomBottomNav() {
+        val themeSettingsButton = findViewById<AppCompatButton>(R.id.theme_settings_button)
         val navHome = findViewById<View>(R.id.navHome)
         val navServices = findViewById<View>(R.id.navServices)
         val navExperts = findViewById<View>(R.id.navExperts)
@@ -139,6 +135,10 @@ class AppSettingsActivity : AppCompatActivity() {
                 startActivity(Intent(this, ProfileActivity::class.java)
                     .putExtra("selected_item_id", R.id.profile))
             }
+        }
+
+        themeSettingsButton.setOnClickListener {
+            startActivity(Intent(this, ThemeSettingsActivity::class.java))
         }
     }
 

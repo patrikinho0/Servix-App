@@ -6,27 +6,32 @@
     android:orientation="vertical"
     android:padding="24dp"
     android:background="@drawable/rounded_corner_background"
-    android:layout_centerInParent="true"
-    android:layout_alignParentStart="true"
-    android:layout_margin="24dp">
-
-    <ProgressBar
-    android:layout_width="50dp"
-    android:layout_height="50dp"
+    android:elevation="8dp" android:layout_gravity="center"> <ProgressBar
+    android:id="@+id/progressBar"
+    android:layout_width="60dp" android:layout_height="60dp"
     android:indeterminate="true"
     android:layout_gravity="center"
-    android:progressDrawable="@drawable/rounded_corner_background" />
-
-    <TextView
+    android:layout_marginBottom="16dp" android:indeterminateTint="?attr/colorPrimary" /> <TextView
     android:id="@+id/loadingTextView"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
-    android:text="Loading..."
-    android:textSize="18sp"
-    android:textColor="#333333"
+    android:text="Please wait..." android:textSize="18sp"
     android:fontFamily="sans-serif-medium"
     android:gravity="center"
     android:textStyle="bold" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/subMessageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Processing your request..."
+        android:textSize="14sp"
+        android:gravity="center"
+        android:visibility="gone" /> <ImageView
+        android:id="@+id/appLogoImageView"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/servix_logo"
+        android:visibility="gone" /> </LinearLayout>
