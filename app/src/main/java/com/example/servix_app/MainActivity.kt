@@ -31,16 +31,6 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-//        val announcements = mutableListOf(
-//            Announcement(
-//                "https://firebasestorage.googleapis.com/v0/b/crud-90e1f.appspot.com/o/service_images%2F499ab01e-eea4-43e7-a1ff-6053a1cab58a?alt=media&token=3eca8883-99a9-4c16-8cfe-968a477a8dcb",
-//                "Need help!",
-//                "Active",
-//                "Zgierz",
-//                "07-04-2025"
-//            )
-//        )
-
         val announcements = mutableListOf<Announcement>()
         val myAdapter = MyAdapter(announcements)
         val myRecyclerView: RecyclerView = findViewById(R.id.recyclerView)

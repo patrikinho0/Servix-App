@@ -27,7 +27,6 @@ class MyAdapter(var announements: List<Announcement>) : RecyclerView.Adapter<MyA
 
         val images: ImageView = holder.itemView.findViewById(R.id.list_item_images)
         val title: TextView = holder.itemView.findViewById(R.id.list_item_title)
-        val state: TextView = holder.itemView.findViewById(R.id.list_item_state)
         val location: TextView = holder.itemView.findViewById(R.id.list_item_location)
         val date: TextView = holder.itemView.findViewById(R.id.list_item_date)
 
@@ -36,7 +35,6 @@ class MyAdapter(var announements: List<Announcement>) : RecyclerView.Adapter<MyA
         }
 
         title.text = announcement.title
-        state.text = announcement.state
         location.text = announcement.location
 
         val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
