@@ -37,4 +37,5 @@
     <string name="licenses">Licenses</string>
     <string name="log_out">Log out</string>
     <string name="user_profile_picture">User Profile Picture</string>
+    <string name="see_password">see password</string>
 </resources>

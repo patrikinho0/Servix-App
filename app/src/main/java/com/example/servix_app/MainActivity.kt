@@ -3,6 +3,7 @@ package com.example.servix_app
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -12,9 +13,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class MainActivity : AppCompatActivity() {
     private var selectedItemId: Int = R.id.home
+    private val db = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,20 +31,34 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val announcements = mutableListOf(
-            Announcement(
-                "https://firebasestorage.googleapis.com/v0/b/crud-90e1f.appspot.com/o/service_images%2F499ab01e-eea4-43e7-a1ff-6053a1cab58a?alt=media&token=3eca8883-99a9-4c16-8cfe-968a477a8dcb",
-                "Need help!",
-                "Active",
-                "Zgierz",
-                "07-04-2025"
-            )
-        )
+//        val announcements = mutableListOf(
+//            Announcement(
+//                "https://firebasestorage.googleapis.com/v0/b/crud-90e1f.appspot.com/o/service_images%2F499ab01e-eea4-43e7-a1ff-6053a1cab58a?alt=media&token=3eca8883-99a9-4c16-8cfe-968a477a8dcb",
+//                "Need help!",
+//                "Active",
+//                "Zgierz",
+//                "07-04-2025"
+//            )
+//        )
 
+        val announcements = mutableListOf<Announcement>()
         val myAdapter = MyAdapter(announcements)
         val myRecyclerView: RecyclerView = findViewById(R.id.recyclerView)
         myRecyclerView.adapter = myAdapter
         myRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        db.collection("services")
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    val announcement = document.toObject(Announcement::class.java)
+                    announcements.add(announcement)
+                }
+                myAdapter.notifyDataSetChanged()
+            }
+            .addOnFailureListener { exception ->
+                Log.w("MainActivity", "Error getting documents: ", exception)
+            }
 
         selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
         setupCustomBottomNav()

@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -35,11 +36,13 @@ class LoginActivity : AppCompatActivity() {
 
         val emailEditText: EditText = findViewById(R.id.login_email_editText)
         val passwordEditText: EditText = findViewById(R.id.login_password_editText)
+        val toggle = findViewById<ImageView>(R.id.password_toggle)
         val loginButton: Button = findViewById(R.id.login_button)
         val signUpTextView: TextView = findViewById(R.id.login_signup_textView)
         val forgotPasswordTextView: TextView = findViewById(R.id.login_forgotPass_textView)
         val googleLogin: LinearLayout = findViewById(R.id.google_layout)
         loadingDialog = createLoadingDialog(this)
+        var isPasswordVisible = false
 
         loginButton.setOnClickListener {
             loadingDialog.show()
@@ -75,9 +78,20 @@ class LoginActivity : AppCompatActivity() {
             val registerIntent = Intent(this, RegisterActivity::class.java)
             startActivity(registerIntent)
         }
-
         googleLogin.setOnClickListener {
             startGoogleSignIn()
+        }
+
+        toggle.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            if (isPasswordVisible) {
+                passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                toggle.setImageResource(R.drawable.eye_icon_open)
+            } else {
+                passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                toggle.setImageResource(R.drawable.eye_icon_closed)
+            }
+            passwordEditText.setSelection(passwordEditText.text.length)
         }
     }
 

@@ -29,6 +29,7 @@
         android:layout_marginEnd="24dp"
         android:autofillHints="e-mail"
         android:background="@drawable/input_selector"
+        android:textColor="@color/black"
         android:drawableStart="@drawable/ic_email"
         android:hint="@string/e_mail"
         android:inputType="textEmailAddress"
@@ -37,34 +38,51 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/login_logo_imageView" />
 
-    <EditText
-        android:id="@+id/login_password_editText"
+    <FrameLayout
+        android:id="@+id/frameLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="12dp"
         android:layout_marginEnd="24dp"
-        android:autofillHints="password"
-        android:background="@drawable/input_selector"
-        android:drawableStart="@drawable/ic_lock"
-        android:hint="@string/password"
-        android:inputType="textPassword"
-        android:padding="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/login_email_editText" />
+        app:layout_constraintTop_toBottomOf="@id/login_email_editText">
+
+        <EditText
+            android:id="@+id/login_password_editText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="password"
+            android:background="@drawable/input_selector"
+            android:drawableStart="@drawable/ic_lock"
+            android:hint="@string/password"
+            android:inputType="textPassword"
+            android:padding="12dp"
+            android:paddingEnd="48dp"
+            android:textColor="@color/black" />
+
+        <ImageView
+            android:id="@+id/password_toggle"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/eye_icon_closed" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/login_forgotPass_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="@string/forgot_password"
         android:textSize="14sp"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/login_password_editText"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frameLayout" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/login_button"
@@ -146,18 +164,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/continue_with_google"
-            android:textColor="@color/black"
+
             android:textSize="16sp" />
     </LinearLayout>
 
-    <!-- Sign-up Redirect -->
     <TextView
         android:id="@+id/login_signup_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/don_t_have_an_account_sign_up"
         android:textSize="14sp"
-        android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@id/google_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -1,6 +1,11 @@
 package com.example.servix_app
 
-import java.util.Date
+import com.google.firebase.Timestamp
 
-class Announcement(val imagesURL: String, val title: String, val state: String, val location: String, val date: String) {
-}
+data class Announcement(
+    val images: List<String> = emptyList(),
+    val title: String = "",
+    val state: String = "",
+    val location: String = "",
+    val date: Timestamp = Timestamp.now()
+)

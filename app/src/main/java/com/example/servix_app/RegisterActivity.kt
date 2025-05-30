@@ -8,6 +8,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.*
@@ -33,7 +34,7 @@ class RegisterActivity : AppCompatActivity() {
     private val db = Firebase.firestore
 
     private val getContent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (it.resultCode == Activity.RESULT_OK) {
+        if (it.resultCode == RESULT_OK) {
             val data: Intent? = it.data
             imageUri = data?.data
             imageUri?.let { uri ->
@@ -78,10 +79,12 @@ class RegisterActivity : AppCompatActivity() {
         val pictureAdd: ImageView = findViewById(R.id.plusIcon_imageView)
         val email: EditText = findViewById(R.id.register_email_editText)
         val password: EditText = findViewById(R.id.register_password_editText)
+        val toggle = findViewById<ImageView>(R.id.password_toggle)
         val registerButton: Button = findViewById(R.id.register_button)
         val goToLogin: TextView = findViewById(R.id.register_signin_textView)
         val googleRegister: LinearLayout = findViewById(R.id.google_layout)
         loadingDialog = createLoadingDialog(this)
+        var isPasswordVisible = false
 
         imageView = findViewById(R.id.plusIcon_imageView)
 
@@ -147,6 +150,18 @@ class RegisterActivity : AppCompatActivity() {
 
         googleRegister.setOnClickListener {
             startGoogleSignIn()
+        }
+
+        toggle.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            if (isPasswordVisible) {
+                password.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                toggle.setImageResource(R.drawable.eye_icon_open)
+            } else {
+                password.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                toggle.setImageResource(R.drawable.eye_icon_closed)
+            }
+            password.setSelection(password.text.length)
         }
     }
 
