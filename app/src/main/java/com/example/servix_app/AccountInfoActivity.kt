@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.servix_app.AppSettingsActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
@@ -28,6 +27,7 @@ class AccountInfoActivity : AppCompatActivity() {
     private lateinit var userNameTextView: TextView
     private lateinit var userEmailTextView: TextView
     private lateinit var userRoleTextView: TextView
+    private lateinit var resignExpertButton: Button
     private lateinit var deleteAccountButton: Button
     private var selectedItemId: Int = R.id.services
 
@@ -46,6 +46,7 @@ class AccountInfoActivity : AppCompatActivity() {
         userNameTextView = findViewById(R.id.user_name)
         userEmailTextView = findViewById(R.id.user_email)
         userRoleTextView = findViewById(R.id.user_role)
+        resignExpertButton = findViewById(R.id.resign_expert_button)
         deleteAccountButton = findViewById(R.id.delete_account_button)
 
         selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
@@ -74,6 +75,11 @@ class AccountInfoActivity : AppCompatActivity() {
 
                     val role = document.getString("role") ?: "user"
                     userRoleTextView.text = role.replaceFirstChar { it.uppercase() }
+
+                    if (role == "expert") {
+                        resignExpertButton.visibility = View.VISIBLE
+                        setupResignExpertButton()
+                    }
                 }
             }
             .addOnFailureListener {
@@ -93,6 +99,32 @@ class AccountInfoActivity : AppCompatActivity() {
                 .show()
         }
     }
+
+    private fun setupResignExpertButton() {
+        resignExpertButton.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Resign from Expert")
+                .setMessage("Are you sure you want to resign from being an expert? You will lose access to expert features.")
+                .setPositiveButton("Resign") { _, _ -> resignFromExpert() }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+    }
+
+    private fun resignFromExpert() {
+        val currentUser = auth.currentUser ?: return
+        db.collection("users").document(currentUser.uid)
+            .update("role", "user")
+            .addOnSuccessListener {
+                Toast.makeText(this, "You are no longer an expert.", Toast.LENGTH_SHORT).show()
+                resignExpertButton.visibility = View.GONE
+                userRoleTextView.text = "User"
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to update role. Try again.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
 
     private fun deleteUserAccount() {
         val user = auth.currentUser ?: return

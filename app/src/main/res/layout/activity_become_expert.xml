@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:id="@+id/expert_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:clipToPadding="false">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Become an Expert"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="20dp" />
+
+        <EditText
+            android:id="@+id/expertise_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Your area of expertise (e.g., Plumbing, Programming)"
+            android:background="@android:drawable/edit_text"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="20dp"/>
+
+        <EditText
+            android:id="@+id/description_input"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:hint="Short profile description"
+            android:inputType="textMultiLine"
+            android:gravity="top|start"
+            android:background="@android:drawable/edit_text"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="30dp" />
+
+        <Button
+            android:id="@+id/submit_expert_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Submit"
+            android:backgroundTint="#2196F3"
+            android:textColor="#FFFFFF"
+            android:padding="16dp"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
+</ScrollView>

@@ -43,32 +43,7 @@ class ExpertsActivity : AppCompatActivity() {
         val becomeExpertBtn = findViewById<Button>(R.id.experts_becomeExpert_button)
 
         becomeExpertBtn.setOnClickListener {
-            val user = auth.currentUser
-            if (user != null) {
-                val userDocRef = db.collection("users").document(user.uid)
-                userDocRef.get()
-                    .addOnSuccessListener { document ->
-                        if (document.exists()) {
-                            val currentRole = document.getString("role") ?: "user"
-                            if (currentRole == "expert") {
-                                Toast.makeText(this, "You are already an expert!", Toast.LENGTH_SHORT).show()
-                            } else {
-                                userDocRef.update("role", "expert")
-                                    .addOnSuccessListener {
-                                        Toast.makeText(this, "You are now an expert!", Toast.LENGTH_SHORT).show()
-                                    }
-                                    .addOnFailureListener {
-                                        Toast.makeText(this, "Failed to update role", Toast.LENGTH_SHORT).show()
-                                    }
-                            }
-                        }
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(this, "Could not fetch user data", Toast.LENGTH_SHORT).show()
-                    }
-            } else {
-                Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
-            }
+            startActivity(Intent(this, BecomeExpertActivity::class.java))
         }
     }
 
