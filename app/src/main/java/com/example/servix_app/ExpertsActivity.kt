@@ -12,12 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.get
-import androidx.core.view.size
-import com.example.servix_app.NotificationsActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -45,6 +42,31 @@ class ExpertsActivity : AppCompatActivity() {
         becomeExpertBtn.setOnClickListener {
             startActivity(Intent(this, BecomeExpertActivity::class.java))
         }
+
+        val recyclerView = findViewById<RecyclerView>(R.id.expertsRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val experts = mutableListOf<Expert>()
+        val adapter = ExpertAdapter(experts)
+        recyclerView.adapter = adapter
+
+        db.collection("experts")
+            .get()
+            .addOnSuccessListener { result ->
+                for (doc in result) {
+                    val expert = Expert(
+                        name = doc.getString("name") ?: "",
+                        expertise = doc.getString("expertise") ?: "",
+                        description = doc.getString("description") ?: "",
+                        rating = doc.getDouble("rating") ?: 0.0
+                    )
+                    experts.add(expert)
+                }
+                adapter.notifyDataSetChanged()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to load experts", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun setupCustomBottomNav() {

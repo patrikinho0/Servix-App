@@ -29,6 +29,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/experts_header_textView" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/expertsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/customBottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/experts_becomeExpert_button" />
 
     <FrameLayout
         android:id="@+id/contentContainer"

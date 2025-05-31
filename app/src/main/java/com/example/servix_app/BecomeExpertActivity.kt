@@ -47,30 +47,39 @@ class BecomeExpertActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val expertData = hashMapOf(
-                "uid" to user.uid,
-                "expertise" to expertise,
-                "description" to description,
-                "rating" to 0.0,
-                "numberOfRatings" to 0
-            )
+            db.collection("users").document(user.uid).get()
+                .addOnSuccessListener { document ->
+                    val profilePictureUrl = document.getString("profilePictureUrl") ?: ""
 
-            db.collection("experts").document(user.uid).set(expertData)
-                .addOnSuccessListener {
-                    db.collection("users").document(user.uid)
-                        .update("role", "expert")
+                    val expertData = hashMapOf(
+                        "uid" to user.uid,
+                        "expertise" to expertise,
+                        "description" to description,
+                        "rating" to 0.0,
+                        "numberOfRatings" to 0,
+                        "profilePictureUrl" to profilePictureUrl
+                    )
+
+                    db.collection("experts").document(user.uid).set(expertData)
                         .addOnSuccessListener {
-                            Toast.makeText(this, "You are now an expert!", Toast.LENGTH_LONG).show()
-                            startActivity(Intent(this, ProfileActivity::class.java)
-                                .putExtra("selected_item_id", R.id.profile))
-                            finish()
+                            db.collection("users").document(user.uid)
+                                .update("role", "expert")
+                                .addOnSuccessListener {
+                                    Toast.makeText(this, "You are now an expert!", Toast.LENGTH_LONG).show()
+                                    startActivity(Intent(this, ProfileActivity::class.java)
+                                        .putExtra("selected_item_id", R.id.profile))
+                                    finish()
+                                }
+                                .addOnFailureListener {
+                                    Toast.makeText(this, "Failed to update user role", Toast.LENGTH_SHORT).show()
+                                }
                         }
                         .addOnFailureListener {
-                            Toast.makeText(this, "Failed to update user role", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Failed to become expert", Toast.LENGTH_SHORT).show()
                         }
                 }
                 .addOnFailureListener {
-                    Toast.makeText(this, "Failed to become expert", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Failed to fetch profile picture", Toast.LENGTH_SHORT).show()
                 }
         }
     }
