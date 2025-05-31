@@ -4,7 +4,9 @@ import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -14,11 +16,19 @@ import androidx.core.view.get
 import androidx.core.view.size
 import com.example.servix_app.NotificationsActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class ExpertsActivity : AppCompatActivity() {
     private var selectedItemId: Int = R.id.services
+    private val db = Firebase.firestore
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        auth = FirebaseAuth.getInstance()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_experts)
@@ -29,6 +39,37 @@ class ExpertsActivity : AppCompatActivity() {
         }
         selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
         setupCustomBottomNav()
+
+        val becomeExpertBtn = findViewById<Button>(R.id.experts_becomeExpert_button)
+
+        becomeExpertBtn.setOnClickListener {
+            val user = auth.currentUser
+            if (user != null) {
+                val userDocRef = db.collection("users").document(user.uid)
+                userDocRef.get()
+                    .addOnSuccessListener { document ->
+                        if (document.exists()) {
+                            val currentRole = document.getString("role") ?: "user"
+                            if (currentRole == "expert") {
+                                Toast.makeText(this, "You are already an expert!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                userDocRef.update("role", "expert")
+                                    .addOnSuccessListener {
+                                        Toast.makeText(this, "You are now an expert!", Toast.LENGTH_SHORT).show()
+                                    }
+                                    .addOnFailureListener {
+                                        Toast.makeText(this, "Failed to update role", Toast.LENGTH_SHORT).show()
+                                    }
+                            }
+                        }
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Could not fetch user data", Toast.LENGTH_SHORT).show()
+                    }
+            } else {
+                Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun setupCustomBottomNav() {

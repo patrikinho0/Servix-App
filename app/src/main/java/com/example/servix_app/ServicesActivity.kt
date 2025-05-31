@@ -3,6 +3,7 @@ package com.example.servix_app
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -14,10 +15,16 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.core.view.size
 import androidx.core.view.get
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.servix_app.NotificationsActivity
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class ServicesActivity : AppCompatActivity() {
     private var selectedItemId: Int = R.id.services
+    private val db = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +35,27 @@ class ServicesActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        val announcements = mutableListOf<Announcement>()
+        val myAdapter = MyAdapter(announcements)
+        val myRecyclerView: RecyclerView = findViewById(R.id.servicesRecyclerView)
+        myRecyclerView.adapter = myAdapter
+        myRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        db.collection("services")
+            .orderBy("date", Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { documents ->
+                announcements.clear()
+                for (document in documents) {
+                    val announcement = document.toObject(Announcement::class.java)
+                    announcements.add(announcement)
+                }
+                myAdapter.notifyDataSetChanged()
+            }
+            .addOnFailureListener { exception ->
+                Log.w("ServicesActivity", "Error getting documents: ", exception)
+            }
 
         val serviceButton: Button = findViewById(R.id.services_addService_button)
 
