@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -12,45 +13,112 @@
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="16dp"
         android:iconifiedByDefault="false"
         android:queryHint="Search service or expert"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/main_filter_imageView"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/main_filter_imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="16dp"
         android:contentDescription="Filter"
+        app:srcCompat="@drawable/filter_icon"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/filter_icon" />
+        app:layout_constraintTop_toTopOf="@id/main_searchView"
+        app:layout_constraintBottom_toBottomOf="@id/main_searchView" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="409dp"
-        android:layout_height="606dp"
-        app:layout_constraintBottom_toTopOf="@+id/customBottomNav"
-        app:layout_constraintEnd_toEndOf="parent"
+    <ScrollView
+        android:id="@+id/scroll_main"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/main_searchView"
+        app:layout_constraintBottom_toTopOf="@id/customBottomNav"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/main_searchView" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/main_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/title_services"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Services"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView_services"
+                android:layout_marginTop="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/title_experts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Experts"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView_experts"
+                android:layout_marginTop="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/title_recommended"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Recommended"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView_recommended"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
 
     <FrameLayout
         android:id="@+id/contentContainer"
-        android:layout_width="match_parent"
-        android:visibility="gone"
+        android:layout_width="0dp"
         android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/customBottomNav" />
+        app:layout_constraintBottom_toTopOf="@id/customBottomNav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
         android:id="@+id/customBottomNav"
         android:layout_width="0dp"
         android:layout_height="70dp"
-        android:baselineAligned="false"
         android:orientation="horizontal"
-        android:weightSum="5"
+        android:baselineAligned="false"
         android:background="@color/white"
+        android:weightSum="5"
         android:paddingTop="6dp"
         android:paddingBottom="6dp"
         android:elevation="8dp"
@@ -66,8 +134,7 @@
             android:orientation="vertical"
             android:gravity="center"
             android:clickable="true"
-            android:focusable="true"
-            tools:ignore="UseCompoundDrawables">
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/navHome_ImageView"
@@ -93,8 +160,7 @@
             android:orientation="vertical"
             android:gravity="center"
             android:clickable="true"
-            android:focusable="true"
-            tools:ignore="UseCompoundDrawables">
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/navServices_ImageView"
@@ -120,8 +186,7 @@
             android:orientation="vertical"
             android:gravity="center"
             android:clickable="true"
-            android:focusable="true"
-            tools:ignore="UseCompoundDrawables">
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/navExperts_ImageView"
@@ -138,7 +203,7 @@
                 android:textColor="@android:color/black"
                 android:textSize="14sp" />
         </LinearLayout>
-
+        >
         <LinearLayout
             android:id="@+id/navNotifications"
             android:layout_width="0dp"
@@ -147,8 +212,7 @@
             android:orientation="vertical"
             android:gravity="center"
             android:clickable="true"
-            android:focusable="true"
-            tools:ignore="UseCompoundDrawables">
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/navNotifications_ImageView"
@@ -174,8 +238,7 @@
             android:orientation="vertical"
             android:gravity="center"
             android:clickable="true"
-            android:focusable="true"
-            tools:ignore="UseCompoundDrawables">
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/navProfile_ImageView"
@@ -183,16 +246,16 @@
                 android:layout_height="24dp"
                 android:contentDescription="@string/profile"
                 android:src="@drawable/person" />
+
             <TextView
                 android:id="@+id/navProfile_textView"
-                android:text="@string/profile"
-                android:textSize="14sp"
-                android:textColor="@android:color/black"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
+                android:text="@string/profile"
+                android:textColor="@android:color/black"
+                android:textSize="14sp" />
         </LinearLayout>
 
     </LinearLayout>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

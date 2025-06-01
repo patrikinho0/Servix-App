@@ -130,7 +130,8 @@ class AddPostActivity : AppCompatActivity() {
             "location" to location,
             "images" to imageUrls,
             "uid" to userId,
-            "date" to Date()
+            "date" to Date(),
+            "category" to "service"
         )
 
         db.collection("services")

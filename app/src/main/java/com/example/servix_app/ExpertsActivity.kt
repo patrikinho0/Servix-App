@@ -38,10 +38,28 @@ class ExpertsActivity : AppCompatActivity() {
         setupCustomBottomNav()
 
         val becomeExpertBtn = findViewById<Button>(R.id.experts_becomeExpert_button)
+        val currentUserUid = auth.currentUser?.uid
 
-        becomeExpertBtn.setOnClickListener {
-            startActivity(Intent(this, BecomeExpertActivity::class.java))
+        if (currentUserUid != null) {
+            db.collection("experts")
+                .whereEqualTo("uid", currentUserUid)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (!documents.isEmpty) {
+                        becomeExpertBtn.text = "You're already an expert"
+                        becomeExpertBtn.isEnabled = false
+                        becomeExpertBtn.alpha = 0.5f
+                    } else {
+                        becomeExpertBtn.setOnClickListener {
+                            startActivity(Intent(this, BecomeExpertActivity::class.java))
+                        }
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error checking expert status", Toast.LENGTH_SHORT).show()
+                }
         }
+
 
         val recyclerView = findViewById<RecyclerView>(R.id.expertsRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)

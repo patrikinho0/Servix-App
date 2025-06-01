@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Date
 
 class BecomeExpertActivity : AppCompatActivity() {
 
@@ -58,7 +59,9 @@ class BecomeExpertActivity : AppCompatActivity() {
                         "description" to description,
                         "rating" to 0.0,
                         "numberOfRatings" to 0,
-                        "profilePictureUrl" to profilePictureUrl
+                        "profilePictureUrl" to profilePictureUrl,
+                        "date" to Date(),
+                        "category" to "expert"
                     )
 
                     db.collection("experts").document(user.uid).set(expertData)
