@@ -48,20 +48,14 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
             .addOnSuccessListener { documents ->
                 announcements.clear()
                 for (document in documents) {
-                    val title = document.getString("title") ?: ""
-                    val location = document.getString("location") ?: ""
-                    val description = document.getString("description") ?: ""
-                    val uid = document.getString("uid") ?: ""
-                    val images = document.get("images") as? List<String> ?: emptyList()
-                    val date = document.getTimestamp("date") ?: Timestamp.now()
-
-                    val announcement = Announcement(images, title, location, description, date, uid)
+                    val announcement = document.toObject(Announcement::class.java)
+                    announcement.id = document.id
                     announcements.add(announcement)
                 }
-                myAdapter.notifyDataSetChanged()
+                myAdapter.updateData(announcements)
             }
             .addOnFailureListener { exception ->
-                Log.w("ServicesActivity", "Error getting services: ", exception)
+                Log.w("FirebaseFetch", "Error getting documents: ", exception)
             }
 
 
@@ -77,12 +71,15 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
 
     override fun onServiceClick(announcement: Announcement) {
         val intent = Intent(this, SingleServiceActivity::class.java).apply {
+            putExtra("serviceId", announcement.id) // <--- Pass the document ID
             putExtra("title", announcement.title)
             putExtra("description", announcement.description)
-            putExtra("date", SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(announcement.date.toDate()))
+            putExtra("date", announcement.date?.toDate()?.let {
+                SimpleDateFormat("dd MMM yyyy 'at' hh:mm:ss a", Locale.getDefault()).format(it)
+            })
             putExtra("location", announcement.location)
             putExtra("uid", announcement.uid)
-            putStringArrayListExtra("images", ArrayList(announcement.images))
+            putStringArrayListExtra("images", ArrayList(announcement.images.filterNotNull()))
         }
         startActivity(intent)
     }

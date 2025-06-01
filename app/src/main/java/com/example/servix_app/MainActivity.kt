@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
 
         loadServices(orderBy = "desc")
         loadExperts()
-        loadRecommendedServices()
+        loadRecommendedServices() // This will also need the ID
 
         setupFilterButton()
         setupCustomBottomNav()
@@ -83,8 +83,8 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
         }
 
         val filteredServices = servicesList.filter {
-            it.title.contains(query, ignoreCase = true) == true ||
-                    it.location.contains(query, ignoreCase = true) == true
+            it.title?.contains(query, ignoreCase = true) == true ||
+                    it.location?.contains(query, ignoreCase = true) == true
         }
 
         val filteredExperts = expertsList.filter {
@@ -104,8 +104,8 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
         expertsRecyclerView = findViewById(R.id.recyclerView_experts)
         recommendedRecyclerView = findViewById(R.id.recyclerView_recommended)
 
-        expertsRecyclerView.layoutManager = LinearLayoutManager(this)
         servicesRecyclerView.layoutManager = LinearLayoutManager(this)
+        expertsRecyclerView.layoutManager = LinearLayoutManager(this)
         recommendedRecyclerView.layoutManager = LinearLayoutManager(this)
 
         serviceAdapter = MyAdapter(servicesList, this)
@@ -122,9 +122,13 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
         db.collection("services")
             .get()
             .addOnSuccessListener { documents ->
-                val allServices = documents.mapNotNull { it.toObject(Announcement::class.java) }
-                val randomServices = allServices.shuffled().take(2)
-
+                recommendedList.clear()
+                for (document in documents) {
+                    val announcement = document.toObject(Announcement::class.java)
+                    announcement.id = document.id
+                    recommendedList.add(announcement)
+                }
+                val randomServices = recommendedList.shuffled().take(2)
                 recommendedList.clear()
                 recommendedList.addAll(randomServices)
                 recommendedAdapter.updateData(recommendedList)
@@ -158,6 +162,7 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
                 servicesList.clear()
                 for (document in documents) {
                     val announcement = document.toObject(Announcement::class.java)
+                    announcement.id = document.id
                     servicesList.add(announcement)
                 }
                 serviceAdapter.updateData(servicesList)
@@ -185,16 +190,19 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
 
     override fun onServiceClick(announcement: Announcement) {
         val intent = Intent(this, SingleServiceActivity::class.java).apply {
+            putExtra("serviceId", announcement.id)
             putExtra("title", announcement.title)
             putExtra("description", announcement.description)
-            putExtra("date", SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(announcement.date.toDate()))
+            val formattedDate = announcement.date?.toDate()?.let {
+                SimpleDateFormat("dd MMM yyyy 'at' hh:mm:ss a", Locale.getDefault()).format(it)
+            } ?: ""
+            putExtra("date", formattedDate)
             putExtra("location", announcement.location)
             putExtra("uid", announcement.uid)
-            putStringArrayListExtra("images", ArrayList(announcement.images))
+            putStringArrayListExtra("images", ArrayList(announcement.images.filterNotNull()))
         }
         startActivity(intent)
     }
-
 
     private fun setupCustomBottomNav() {
         val navHome = findViewById<View>(R.id.navHome)

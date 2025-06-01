@@ -60,7 +60,7 @@ class MyAdapter(
         holder.location.text = announcement.location
 
         val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-        holder.date.text = sdf.format(announcement.date.toDate())
+        holder.date.text = sdf.format(announcement.date?.toDate())
     }
 
     override fun getItemCount(): Int = announcements.size
