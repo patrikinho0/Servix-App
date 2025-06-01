@@ -113,17 +113,26 @@ class AccountInfoActivity : AppCompatActivity() {
 
     private fun resignFromExpert() {
         val currentUser = auth.currentUser ?: return
+
         db.collection("users").document(currentUser.uid)
             .update("role", "user")
             .addOnSuccessListener {
-                Toast.makeText(this, "You are no longer an expert.", Toast.LENGTH_SHORT).show()
-                resignExpertButton.visibility = View.GONE
-                userRoleTextView.text = "User"
+                db.collection("experts").document(currentUser.uid)
+                    .delete()
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "You are no longer an expert.", Toast.LENGTH_SHORT).show()
+                        resignExpertButton.visibility = View.GONE
+                        userRoleTextView.text = "User"
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Failed to remove from experts list.", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Failed to update role. Try again.", Toast.LENGTH_SHORT).show()
             }
     }
+
 
 
     private fun deleteUserAccount() {

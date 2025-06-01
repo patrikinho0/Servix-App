@@ -53,6 +53,7 @@ class BecomeExpertActivity : AppCompatActivity() {
 
                     val expertData = hashMapOf(
                         "uid" to user.uid,
+                        "name" to (document.getString("name") ?: "No name"),
                         "expertise" to expertise,
                         "description" to description,
                         "rating" to 0.0,
@@ -79,8 +80,9 @@ class BecomeExpertActivity : AppCompatActivity() {
                         }
                 }
                 .addOnFailureListener {
-                    Toast.makeText(this, "Failed to fetch profile picture", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Failed to fetch user data", Toast.LENGTH_SHORT).show()
                 }
         }
+
     }
 }

@@ -54,14 +54,10 @@ class ExpertsActivity : AppCompatActivity() {
             .get()
             .addOnSuccessListener { result ->
                 for (doc in result) {
-                    val expert = Expert(
-                        name = doc.getString("name") ?: "",
-                        expertise = doc.getString("expertise") ?: "",
-                        description = doc.getString("description") ?: "",
-                        rating = doc.getDouble("rating") ?: 0.0
-                    )
+                    val expert = doc.toObject(Expert::class.java)
                     experts.add(expert)
                 }
+
                 adapter.notifyDataSetChanged()
             }
             .addOnFailureListener {

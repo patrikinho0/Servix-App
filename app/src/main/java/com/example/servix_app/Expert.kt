@@ -7,4 +7,3 @@ data class Expert(
     val rating: Double = 0.0,
     val profilePictureUrl: String = ""
 )
-
