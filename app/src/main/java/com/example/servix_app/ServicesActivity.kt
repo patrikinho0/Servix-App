@@ -2,6 +2,7 @@ package com.example.servix_app
 
 import android.content.Intent
 import android.graphics.Typeface
+import android.net.Uri // Import Uri for mailto
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,17 +13,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import androidx.core.view.size
-import androidx.core.view.get
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.servix_app.NotificationsActivity
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import java.text.SimpleDateFormat
+import java.util.Locale // Import Locale for SimpleDateFormat
 
-class ServicesActivity : AppCompatActivity() {
+class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
     private var selectedItemId: Int = R.id.services
     private val db = Firebase.firestore
 
@@ -37,7 +37,7 @@ class ServicesActivity : AppCompatActivity() {
         }
 
         val announcements = mutableListOf<Announcement>()
-        val myAdapter = MyAdapter(announcements)
+        val myAdapter = MyAdapter(announcements, this)
         val myRecyclerView: RecyclerView = findViewById(R.id.servicesRecyclerView)
         myRecyclerView.adapter = myAdapter
         myRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -48,14 +48,22 @@ class ServicesActivity : AppCompatActivity() {
             .addOnSuccessListener { documents ->
                 announcements.clear()
                 for (document in documents) {
-                    val announcement = document.toObject(Announcement::class.java)
+                    val title = document.getString("title") ?: ""
+                    val location = document.getString("location") ?: ""
+                    val description = document.getString("description") ?: ""
+                    val uid = document.getString("uid") ?: ""
+                    val images = document.get("images") as? List<String> ?: emptyList()
+                    val date = document.getTimestamp("date") ?: Timestamp.now()
+
+                    val announcement = Announcement(images, title, location, description, date, uid)
                     announcements.add(announcement)
                 }
                 myAdapter.notifyDataSetChanged()
             }
             .addOnFailureListener { exception ->
-                Log.w("ServicesActivity", "Error getting documents: ", exception)
+                Log.w("ServicesActivity", "Error getting services: ", exception)
             }
+
 
         val serviceButton: Button = findViewById(R.id.services_addService_button)
 
@@ -65,6 +73,18 @@ class ServicesActivity : AppCompatActivity() {
         }
         selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
         setupCustomBottomNav()
+    }
+
+    override fun onServiceClick(announcement: Announcement) {
+        val intent = Intent(this, SingleServiceActivity::class.java).apply {
+            putExtra("title", announcement.title)
+            putExtra("description", announcement.description)
+            putExtra("date", SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(announcement.date.toDate()))
+            putExtra("location", announcement.location)
+            putExtra("uid", announcement.uid)
+            putStringArrayListExtra("images", ArrayList(announcement.images))
+        }
+        startActivity(intent)
     }
 
     private fun setupCustomBottomNav() {

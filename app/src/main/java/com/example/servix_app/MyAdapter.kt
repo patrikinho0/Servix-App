@@ -10,21 +10,36 @@ import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class MyAdapter(private var announcements: List<Announcement>) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
+// Define an interface for click listener
+interface OnServiceClickListener {
+    fun onServiceClick(announcement: Announcement)
+}
+
+class MyAdapter(
+    private var announcements: MutableList<Announcement>,
+    private val listener: OnServiceClickListener
+) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val image: ImageView = itemView.findViewById(R.id.list_item_images)
         val title: TextView = itemView.findViewById(R.id.list_item_title)
         val location: TextView = itemView.findViewById(R.id.list_item_location)
         val date: TextView = itemView.findViewById(R.id.list_item_date)
+
+        init {
+            itemView.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    listener.onServiceClick(announcements[position])
+                }
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent, false)
         return MyViewHolder(view)
     }
-
-    override fun getItemCount(): Int = announcements.size
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val announcement = announcements[position]
@@ -46,5 +61,12 @@ class MyAdapter(private var announcements: List<Announcement>) : RecyclerView.Ad
 
         val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
         holder.date.text = sdf.format(announcement.date.toDate())
+    }
+
+    override fun getItemCount(): Int = announcements.size
+
+    fun updateData(newList: MutableList<Announcement>) {
+        this.announcements = newList
+        notifyDataSetChanged()
     }
 }

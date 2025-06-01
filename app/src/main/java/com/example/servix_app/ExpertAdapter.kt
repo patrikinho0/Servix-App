@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 
-class ExpertAdapter(private val expertList: List<Expert>) : RecyclerView.Adapter<ExpertAdapter.ExpertViewHolder>() {
+class ExpertAdapter(private var expertList: MutableList<Expert>) : RecyclerView.Adapter<ExpertAdapter.ExpertViewHolder>() {
 
     inner class ExpertViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val profileImage: ImageView = view.findViewById(R.id.expert_profile_image)
@@ -46,4 +46,9 @@ class ExpertAdapter(private val expertList: List<Expert>) : RecyclerView.Adapter
     }
 
     override fun getItemCount(): Int = expertList.size
+
+    fun updateData(newList: MutableList<Expert>) {
+        expertList = newList
+        notifyDataSetChanged()
+    }
 }

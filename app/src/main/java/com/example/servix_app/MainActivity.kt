@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.SearchView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
@@ -18,8 +19,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.text.SimpleDateFormat
+import java.util.Locale
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnServiceClickListener {
     private var selectedItemId: Int = R.id.home
     private val db = Firebase.firestore
 
@@ -35,7 +38,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var expertsList: MutableList<Expert>
     private lateinit var recommendedList: MutableList<Announcement>
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -48,14 +50,49 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupRecyclerView()
-        setupFilterButton()
-        setupCustomBottomNav()
 
         selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
 
         loadServices(orderBy = "desc")
         loadExperts()
         loadRecommendedServices()
+
+        setupFilterButton()
+        setupCustomBottomNav()
+
+        val searchView = findViewById<SearchView>(R.id.main_searchView)
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                filterMain(query)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filterMain(newText)
+                return true
+            }
+        })
+    }
+
+    private fun filterMain(query: String?) {
+        if (query.isNullOrEmpty()) {
+            serviceAdapter.updateData(servicesList)
+            expertAdapter.updateData(expertsList)
+            return
+        }
+
+        val filteredServices = servicesList.filter {
+            it.title.contains(query, ignoreCase = true) == true ||
+                    it.location.contains(query, ignoreCase = true) == true
+        }
+
+        val filteredExperts = expertsList.filter {
+            it.name.contains(query, ignoreCase = true) == true ||
+                    it.expertise.contains(query, ignoreCase = true) == true
+        }
+        serviceAdapter.updateData(filteredServices.toMutableList())
+        expertAdapter.updateData(filteredExperts.toMutableList())
     }
 
     private fun setupRecyclerView() {
@@ -63,21 +100,22 @@ class MainActivity : AppCompatActivity() {
         expertsList = mutableListOf()
         recommendedList = mutableListOf()
 
-        serviceAdapter = MyAdapter(servicesList)
-        expertAdapter = ExpertAdapter(expertsList)
-        recommendedAdapter = MyAdapter(recommendedList)
-
         servicesRecyclerView = findViewById(R.id.recyclerView_services)
         expertsRecyclerView = findViewById(R.id.recyclerView_experts)
         recommendedRecyclerView = findViewById(R.id.recyclerView_recommended)
 
-        servicesRecyclerView.adapter = serviceAdapter
-        expertsRecyclerView.adapter = expertAdapter
-        recommendedRecyclerView.adapter = recommendedAdapter
-
-        servicesRecyclerView.layoutManager = LinearLayoutManager(this)
         expertsRecyclerView.layoutManager = LinearLayoutManager(this)
+        servicesRecyclerView.layoutManager = LinearLayoutManager(this)
         recommendedRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        serviceAdapter = MyAdapter(servicesList, this)
+        servicesRecyclerView.adapter = serviceAdapter
+
+        expertAdapter = ExpertAdapter(expertsList)
+        expertsRecyclerView.adapter = expertAdapter
+
+        recommendedAdapter = MyAdapter(recommendedList, this)
+        recommendedRecyclerView.adapter = recommendedAdapter
     }
 
     private fun loadRecommendedServices() {
@@ -85,18 +123,16 @@ class MainActivity : AppCompatActivity() {
             .get()
             .addOnSuccessListener { documents ->
                 val allServices = documents.mapNotNull { it.toObject(Announcement::class.java) }
-
                 val randomServices = allServices.shuffled().take(2)
 
                 recommendedList.clear()
                 recommendedList.addAll(randomServices)
-                recommendedAdapter.notifyDataSetChanged()
+                recommendedAdapter.updateData(recommendedList)
             }
             .addOnFailureListener { exception ->
                 Log.w("MainActivity", "Error loading recommended services: ", exception)
             }
     }
-
 
     private fun setupFilterButton() {
         val filterIcon = findViewById<ImageView>(R.id.main_filter_imageView)
@@ -124,7 +160,7 @@ class MainActivity : AppCompatActivity() {
                     val announcement = document.toObject(Announcement::class.java)
                     servicesList.add(announcement)
                 }
-                serviceAdapter.notifyDataSetChanged()
+                serviceAdapter.updateData(servicesList)
             }
             .addOnFailureListener { exception ->
                 Log.w("MainActivity", "Error loading services: ", exception)
@@ -140,11 +176,23 @@ class MainActivity : AppCompatActivity() {
                     val expert = document.toObject(Expert::class.java)
                     expertsList.add(expert)
                 }
-                expertAdapter.notifyDataSetChanged()
+                expertAdapter.updateData(expertsList)
             }
             .addOnFailureListener { exception ->
                 Log.w("MainActivity", "Error loading experts: ", exception)
             }
+    }
+
+    override fun onServiceClick(announcement: Announcement) {
+        val intent = Intent(this, SingleServiceActivity::class.java).apply {
+            putExtra("title", announcement.title)
+            putExtra("description", announcement.description)
+            putExtra("date", SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(announcement.date.toDate()))
+            putExtra("location", announcement.location)
+            putExtra("uid", announcement.uid)
+            putStringArrayListExtra("images", ArrayList(announcement.images))
+        }
+        startActivity(intent)
     }
 
 
