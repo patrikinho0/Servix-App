@@ -8,6 +8,8 @@
     <color name="navigation_item_icon">#000000</color>
     <color name="servix_background">#E2E5E0</color>
     <color name="red">#FF0000</color>
+    <color name="light_gray">#F0F0F0</color>
+    <color name="dark_blue">#0000FF</color>
 
     <style name="BottomNavigationViewStyle" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="itemIconTint">@color/navigation_item_icon</item>

@@ -2,9 +2,11 @@ package com.example.servix_app
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log // Make sure this is imported
+import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -27,6 +29,9 @@ class SingleServiceActivity : AppCompatActivity() {
     private var serviceId: String? = null
     private var isBookmarked: Boolean = false
 
+    private lateinit var imageIndicatorContainer: LinearLayout
+    private lateinit var imageUrls: ArrayList<String>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -43,35 +48,46 @@ class SingleServiceActivity : AppCompatActivity() {
         Log.d("SingleServiceActivity", "Current User ID on onCreate: $currentUserId")
 
         val recyclerView = findViewById<RecyclerView>(R.id.imageRecyclerView)
-        val bookmarkIcon = findViewById<ImageView>(R.id.bookmarkIcon) // Ensure this ID matches your XML
+        val bookmarkIcon = findViewById<ImageView>(R.id.bookmarkIcon)
         val titleText = findViewById<TextView>(R.id.serviceTitle)
         val descText = findViewById<TextView>(R.id.serviceDescription)
         val dateText = findViewById<TextView>(R.id.serviceDate)
         val locationText = findViewById<TextView>(R.id.serviceLocation)
         val contactButton = findViewById<Button>(R.id.contactButton)
         val authorText = findViewById<TextView>(R.id.serviceAuthor)
+        imageIndicatorContainer = findViewById(R.id.imageIndicatorContainer)
 
         val title = intent.getStringExtra("title") ?: ""
         val description = intent.getStringExtra("description") ?: ""
         val date = intent.getStringExtra("date") ?: ""
         val location = intent.getStringExtra("location") ?: ""
         val uid = intent.getStringExtra("uid") ?: ""
-        val imageUrls = intent.getStringArrayListExtra("images") ?: arrayListOf()
+        imageUrls = intent.getStringArrayListExtra("images") ?: arrayListOf()
 
-        // --- IMPORTANT: ADD THIS LOG STATEMENT ---
         serviceId = intent.getStringExtra("serviceId")
         Log.d("SingleServiceActivity", "Service ID from Intent: $serviceId")
-        // --- END IMPORTANT LOG STATEMENT ---
 
         titleText.text = title
         descText.text = description
         dateText.text = "Added: $date"
         locationText.text = location
 
-        recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.layoutManager = layoutManager
         recyclerView.adapter = ImageUrlAdapter(imageUrls)
 
-        // Fetch and display author name and set up contact button (this part is likely fine)
+        setupImageIndicator(imageUrls.size)
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                if (firstVisibleItemPosition != RecyclerView.NO_POSITION) {
+                    selectDot(firstVisibleItemPosition)
+                }
+            }
+        })
+
         if (uid.isNotEmpty()) {
             authorText.text = "Author: Loading..."
             db.collection("users").document(uid).get()
@@ -121,8 +137,6 @@ class SingleServiceActivity : AppCompatActivity() {
             }
         }
 
-        // --- Bookmark Icon Logic ---
-        // This is the check that's currently failing because serviceId is likely null.
         if (currentUserId != null && serviceId != null) {
             checkBookmarkStatus(bookmarkIcon)
             bookmarkIcon.setOnClickListener {
@@ -138,6 +152,41 @@ class SingleServiceActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupImageIndicator(count: Int) {
+        imageIndicatorContainer.removeAllViews()
+        if (count <= 1) {
+            imageIndicatorContainer.visibility = View.GONE
+            return
+        } else {
+            imageIndicatorContainer.visibility = View.VISIBLE
+        }
+
+        val dotSize = resources.getDimensionPixelSize(R.dimen.indicator_dot_size)
+        val dotMargin = resources.getDimensionPixelSize(R.dimen.indicator_dot_margin)
+
+        for (i in 0 until count) {
+            val dot = ImageView(this)
+            val params = LinearLayout.LayoutParams(dotSize, dotSize)
+            params.setMargins(dotMargin, 0, dotMargin, 0)
+            dot.layoutParams = params
+            dot.setImageResource(R.drawable.dot_inactive)
+            imageIndicatorContainer.addView(dot)
+        }
+        selectDot(0)
+    }
+
+    private fun selectDot(position: Int) {
+        if (imageUrls.isEmpty()) return
+
+        for (i in 0 until imageIndicatorContainer.childCount) {
+            val dot = imageIndicatorContainer.getChildAt(i) as ImageView
+            if (i == position) {
+                dot.setImageResource(R.drawable.dot_active)
+            } else {
+                dot.setImageResource(R.drawable.dot_inactive)
+            }
+        }
+    }
     private fun checkBookmarkStatus(bookmarkIcon: ImageView) {
         currentUserId?.let { userId ->
             serviceId?.let { sId ->
