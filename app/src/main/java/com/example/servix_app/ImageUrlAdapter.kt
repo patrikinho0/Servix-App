@@ -24,6 +24,6 @@ class ImageUrlAdapter(private val imageUrls: List<String>) : RecyclerView.Adapte
     }
 
     inner class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageView: ImageView = itemView.findViewById(R.id.imageViewItem)
+        val imageView: ImageView = itemView.findViewById(R.id.selected_image_view)
     }
 }

@@ -63,41 +63,38 @@
                 android:layout_marginTop="16dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp" />
-
-            <TextView
-                android:id="@+id/title_experts"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Experts"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:paddingBottom="8dp" />
+                android:layout_marginBottom="16dp"
+                android:nestedScrollingEnabled="false" /> <TextView
+            android:id="@+id/title_experts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Experts"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:paddingBottom="8dp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView_experts"
                 android:layout_marginTop="16dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp" />
-
-            <TextView
-                android:id="@+id/title_recommended"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Recommended"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:paddingBottom="8dp" />
+                android:layout_marginBottom="16dp"
+                android:nestedScrollingEnabled="false" /> <TextView
+            android:id="@+id/title_recommended"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recommended"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:paddingBottom="8dp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView_recommended"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp" />
-
-        </LinearLayout>
+                android:layout_marginBottom="16dp"
+                android:nestedScrollingEnabled="false" /> </LinearLayout>
     </ScrollView>
 
 
@@ -203,7 +200,7 @@
                 android:textColor="@android:color/black"
                 android:textSize="14sp" />
         </LinearLayout>
-        >
+
         <LinearLayout
             android:id="@+id/navNotifications"
             android:layout_width="0dp"
