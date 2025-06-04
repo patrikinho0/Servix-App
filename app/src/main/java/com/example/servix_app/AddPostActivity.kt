@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 import java.util.*
 
 class AddPostActivity : AppCompatActivity() {
@@ -24,7 +23,6 @@ class AddPostActivity : AppCompatActivity() {
     private lateinit var imageRecyclerView: RecyclerView
     private lateinit var selectImagesButton: Button
     private lateinit var titleEditText: EditText
-
     private lateinit var descriptionEditText: EditText
     private lateinit var locationEditText: EditText
     private lateinit var addServiceButton: Button
@@ -51,8 +49,13 @@ class AddPostActivity : AppCompatActivity() {
         locationEditText = findViewById(R.id.add_post_locationEditText)
 
         imageRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        imageAdapter = ImageAdapter(selectedImages)
+
+        imageAdapter = ImageAdapter(selectedImages as ArrayList<Uri>)
         imageRecyclerView.adapter = imageAdapter
+
+        imageAdapter.setOnDeleteClickListener { position ->
+            Toast.makeText(this, "Image removed!", Toast.LENGTH_SHORT).show()
+        }
 
         selectImagesButton.setOnClickListener {
             openGallery()
@@ -164,7 +167,6 @@ class AddPostActivity : AppCompatActivity() {
                 }
             }
 
-            // Notify adapter about the updated images
             imageAdapter.notifyDataSetChanged()
         } else {
             Toast.makeText(this, "Image selection failed", Toast.LENGTH_SHORT).show()
