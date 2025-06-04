@@ -27,7 +27,7 @@ class AddPostActivity : AppCompatActivity() {
     private lateinit var locationEditText: EditText
     private lateinit var addServiceButton: Button
 
-    private val selectedImages: MutableList<Uri> = mutableListOf()
+    private val selectedImages: ArrayList<Uri> = ArrayList()
     private lateinit var imageAdapter: ImageAdapter
 
     private val IMAGE_PICK_CODE = 1000
@@ -50,7 +50,7 @@ class AddPostActivity : AppCompatActivity() {
 
         imageRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
-        imageAdapter = ImageAdapter(selectedImages as ArrayList<Uri>)
+        imageAdapter = ImageAdapter(selectedImages)
         imageRecyclerView.adapter = imageAdapter
 
         imageAdapter.setOnDeleteClickListener { position ->
@@ -76,9 +76,9 @@ class AddPostActivity : AppCompatActivity() {
     }
 
     private fun addService() {
-        val title = titleEditText.text.toString()
-        val description = descriptionEditText.text.toString()
-        val location = locationEditText.text.toString()
+        val title = titleEditText.text.toString().trim()
+        val description = descriptionEditText.text.toString().trim()
+        val location = locationEditText.text.toString().trim()
 
         if (title.isEmpty() || description.isEmpty() || location.isEmpty()) {
             Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
@@ -93,7 +93,7 @@ class AddPostActivity : AppCompatActivity() {
         loadingDialog.show()
 
         val imageUrls = mutableListOf<String>()
-        val uploadTasks = selectedImages.map { imageUri ->
+        selectedImages.forEach { imageUri ->
             uploadImageToFirebase(imageUri) { downloadUrl ->
                 imageUrls.add(downloadUrl)
                 if (imageUrls.size == selectedImages.size) {
@@ -118,7 +118,7 @@ class AddPostActivity : AppCompatActivity() {
                     val downloadUri = task.result
                     onSuccess(downloadUri.toString())
                 } else {
-                    Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Image upload failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                     loadingDialog.dismiss()
                 }
             }
@@ -142,11 +142,12 @@ class AddPostActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 loadingDialog.dismiss()
                 Toast.makeText(this, "Service added successfully", Toast.LENGTH_SHORT).show()
+                setResult(RESULT_OK)
                 finish()
             }
-            .addOnFailureListener {
+            .addOnFailureListener { e ->
                 loadingDialog.dismiss()
-                Toast.makeText(this, "Failed to add service", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Failed to add service: ${e.message}", Toast.LENGTH_LONG).show()
             }
     }
 
@@ -154,22 +155,23 @@ class AddPostActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == IMAGE_PICK_CODE && resultCode == RESULT_OK) {
+            val oldSize = selectedImages.size
             if (data?.clipData != null) {
                 val count = data.clipData!!.itemCount
                 for (i in 0 until count) {
                     val imageUri = data.clipData!!.getItemAt(i).uri
                     selectedImages.add(imageUri)
                 }
+                imageAdapter.notifyItemRangeInserted(oldSize, count)
+            } else if (data?.data != null) {
+                val imageUri = data.data!!
+                selectedImages.add(imageUri)
+                imageAdapter.notifyItemInserted(oldSize)
             } else {
-                val imageUri = data?.data
-                if (imageUri != null) {
-                    selectedImages.add(imageUri)
-                }
+                Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show()
             }
-
-            imageAdapter.notifyDataSetChanged()
         } else {
-            Toast.makeText(this, "Image selection failed", Toast.LENGTH_SHORT).show()
+             Toast.makeText(this, "Image selection cancelled", Toast.LENGTH_SHORT).show()
         }
     }
 

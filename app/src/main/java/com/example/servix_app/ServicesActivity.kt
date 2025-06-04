@@ -21,10 +21,20 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Locale // Import Locale for SimpleDateFormat
+import java.util.ArrayList // Explicitly import ArrayList
 
 class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
+
     private var selectedItemId: Int = R.id.services
     private val db = Firebase.firestore
+
+    // RecyclerView and Adapter properties
+    private lateinit var myRecyclerView: RecyclerView
+    private lateinit var myAdapter: MyAdapter
+    private val announcements = mutableListOf<Announcement>() // This will hold your data
+
+    // Define a request code for starting AddPostActivity
+    private val ADD_SERVICE_REQUEST_CODE = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,42 +46,62 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
             insets
         }
 
-        val announcements = mutableListOf<Announcement>()
-        val myAdapter = MyAdapter(announcements, this)
-        val myRecyclerView: RecyclerView = findViewById(R.id.servicesRecyclerView)
+        myRecyclerView = findViewById(R.id.servicesRecyclerView)
+        myAdapter = MyAdapter(announcements, this) // Pass the mutable list
         myRecyclerView.adapter = myAdapter
         myRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        db.collection("services")
-            .orderBy("date", Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener { documents ->
-                announcements.clear()
-                for (document in documents) {
-                    val announcement = document.toObject(Announcement::class.java)
-                    announcement.id = document.id
-                    announcements.add(announcement)
-                }
-                myAdapter.updateData(announcements)
-            }
-            .addOnFailureListener { exception ->
-                Log.w("FirebaseFetch", "Error getting documents: ", exception)
-            }
-
+        // Initial load of services when the activity is created
+        loadServices()
 
         val serviceButton: Button = findViewById(R.id.services_addService_button)
-
         serviceButton.setOnClickListener {
             val addServiceIntent = Intent(this, AddPostActivity::class.java)
-            startActivity(addServiceIntent)
+            // --- START ACTIVITY FOR RESULT ---
+            startActivityForResult(addServiceIntent, ADD_SERVICE_REQUEST_CODE)
+            // --- END START ACTIVITY FOR RESULT ---
         }
+
         selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
         setupCustomBottomNav()
     }
 
+    // --- NEW METHOD: Encapsulate data fetching logic ---
+    private fun loadServices() {
+        db.collection("services")
+            .orderBy("date", Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { documents ->
+                announcements.clear() // Clear existing data
+                for (document in documents) {
+                    val announcement = document.toObject(Announcement::class.java)
+                    announcement.id = document.id // Ensure ID is set
+                    announcements.add(announcement)
+                }
+                myAdapter.updateData(announcements) // Update adapter with new data
+                Log.d("ServicesActivity", "Services data loaded successfully. Count: ${announcements.size}")
+            }
+            .addOnFailureListener { exception ->
+                Log.w("ServicesActivity", "Error getting documents: ", exception)
+            }
+    }
+    // --- END NEW METHOD ---
+
+    // --- OVERRIDE onActivityResult to handle result from AddPostActivity ---
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        // Check if the request code matches and the result was successful (RESULT_OK)
+        if (requestCode == ADD_SERVICE_REQUEST_CODE && resultCode == RESULT_OK) {
+            // A new service was successfully added, so refresh the list
+            Log.d("ServicesActivity", "AddPostActivity returned RESULT_OK, refreshing services.")
+            loadServices()
+        }
+    }
+    // --- END OVERRIDE onActivityResult ---
+
     override fun onServiceClick(announcement: Announcement) {
         val intent = Intent(this, SingleServiceActivity::class.java).apply {
-            putExtra("serviceId", announcement.id) // <--- Pass the document ID
+            putExtra("serviceId", announcement.id)
             putExtra("title", announcement.title)
             putExtra("description", announcement.description)
             putExtra("date", announcement.date?.toDate()?.let {
@@ -83,6 +113,15 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
         }
         startActivity(intent)
     }
+
+    // --- Add onResume() to ensure data refresh if navigating from other activities ---
+    override fun onResume() {
+        super.onResume()
+        // This ensures the services list is always fresh when the activity comes to the foreground.
+        // It's a good fallback even if onActivityResult also triggers it.
+        loadServices()
+    }
+    // --- End onResume() ---
 
     private fun setupCustomBottomNav() {
         val navHome = findViewById<View>(R.id.navHome)
@@ -120,6 +159,9 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
         }
 
         navServices.setOnClickListener {
+            // No need to restart ServicesActivity if we are already in ServicesActivity
+            // unless there's a specific reason for it in your bottom nav logic.
+            // For refreshing, onResume/onActivityResult are sufficient.
             if (selectedItemId != R.id.services) {
                 startActivity(Intent(this, ServicesActivity::class.java)
                     .putExtra("selected_item_id", R.id.services))
