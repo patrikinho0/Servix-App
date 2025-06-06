@@ -31,6 +31,7 @@ class SingleServiceActivity : AppCompatActivity() {
 
     private lateinit var imageIndicatorContainer: LinearLayout
     private lateinit var imageUrls: ArrayList<String>
+    private lateinit var bookmarkIcon: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +49,7 @@ class SingleServiceActivity : AppCompatActivity() {
         Log.d("SingleServiceActivity", "Current User ID on onCreate: $currentUserId")
 
         val recyclerView = findViewById<RecyclerView>(R.id.imageRecyclerView)
-        val bookmarkIcon = findViewById<ImageView>(R.id.bookmarkIcon)
+        bookmarkIcon = findViewById<ImageView>(R.id.bookmarkIcon)
         val titleText = findViewById<TextView>(R.id.serviceTitle)
         val descText = findViewById<TextView>(R.id.serviceDescription)
         val dateText = findViewById<TextView>(R.id.serviceDate)
@@ -138,16 +139,16 @@ class SingleServiceActivity : AppCompatActivity() {
         }
 
         if (currentUserId != null && serviceId != null) {
-            checkBookmarkStatus(bookmarkIcon)
+            checkBookmarkStatus()
             bookmarkIcon.setOnClickListener {
                 if (isBookmarked) {
-                    showUnbookmarkConfirmationDialog(bookmarkIcon)
+                    showUnbookmarkConfirmationDialog()
                 } else {
-                    showBookmarkConfirmationDialog(bookmarkIcon)
+                    showBookmarkConfirmationDialog()
                 }
             }
         } else {
-            bookmarkIcon.visibility = ImageView.GONE // Hide or disable icon
+            bookmarkIcon.visibility = ImageView.GONE
             Toast.makeText(this, "Login to save services.", Toast.LENGTH_LONG).show()
         }
     }
@@ -187,7 +188,8 @@ class SingleServiceActivity : AppCompatActivity() {
             }
         }
     }
-    private fun checkBookmarkStatus(bookmarkIcon: ImageView) {
+
+    private fun checkBookmarkStatus() {
         currentUserId?.let { userId ->
             serviceId?.let { sId ->
                 db.collection("users").document(userId).get()
@@ -195,36 +197,34 @@ class SingleServiceActivity : AppCompatActivity() {
                         if (documentSnapshot.exists()) {
                             val likedServices = documentSnapshot.get("likedServices") as? List<String>
                             isBookmarked = likedServices?.contains(sId) == true
-                            updateBookmarkIcon(bookmarkIcon, isBookmarked)
+                            updateBookmarkIcon(isBookmarked) // Update icon directly
                         } else {
                             isBookmarked = false
-                            updateBookmarkIcon(bookmarkIcon, false)
+                            updateBookmarkIcon(false)
                         }
                     }
                     .addOnFailureListener { e ->
                         Log.e("SingleServiceActivity", "Error checking bookmark status: ${e.message}", e)
                         isBookmarked = false
-                        updateBookmarkIcon(bookmarkIcon, false)
+                        updateBookmarkIcon(false)
                         Toast.makeText(this, "Error loading bookmark status.", Toast.LENGTH_SHORT).show()
                     }
             }
         }
     }
-
-    private fun updateBookmarkIcon(bookmarkIcon: ImageView, bookmarked: Boolean) {
+    private fun updateBookmarkIcon(bookmarked: Boolean) {
         if (bookmarked) {
             bookmarkIcon.setImageResource(R.drawable.bookmark_ic_filled)
         } else {
             bookmarkIcon.setImageResource(R.drawable.bookmark_ic)
         }
     }
-
-    private fun showBookmarkConfirmationDialog(bookmarkIcon: ImageView) {
+    private fun showBookmarkConfirmationDialog() {
         AlertDialog.Builder(this)
             .setTitle("Save Service?")
             .setMessage("Do you want to save this service to your liked services?")
             .setPositiveButton("Yes") { dialog, _ ->
-                updateLikedServices(true, bookmarkIcon)
+                updateLikedServices(true)
                 dialog.dismiss()
             }
             .setNegativeButton("No") { dialog, _ ->
@@ -233,12 +233,12 @@ class SingleServiceActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showUnbookmarkConfirmationDialog(bookmarkIcon: ImageView) {
+    private fun showUnbookmarkConfirmationDialog() {
         AlertDialog.Builder(this)
             .setTitle("Remove Service?")
             .setMessage("Do you want to remove this service from your liked services?")
             .setPositiveButton("Yes") { dialog, _ ->
-                updateLikedServices(false, bookmarkIcon)
+                updateLikedServices(false)
                 dialog.dismiss()
             }
             .setNegativeButton("No") { dialog, _ ->
@@ -246,8 +246,7 @@ class SingleServiceActivity : AppCompatActivity() {
             }
             .show()
     }
-
-    private fun updateLikedServices(bookmark: Boolean, bookmarkIcon: ImageView) {
+    private fun updateLikedServices(bookmark: Boolean) {
         currentUserId?.let { userId ->
             serviceId?.let { sId ->
                 val userDocRef = db.collection("users").document(userId)
@@ -256,7 +255,7 @@ class SingleServiceActivity : AppCompatActivity() {
                 userDocRef.update("likedServices", updateOperation)
                     .addOnSuccessListener {
                         isBookmarked = bookmark
-                        updateBookmarkIcon(bookmarkIcon, isBookmarked)
+                        updateBookmarkIcon(isBookmarked)
                         val message = if (bookmark) "Service saved!" else "Service removed from saved."
                         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                     }
@@ -264,6 +263,7 @@ class SingleServiceActivity : AppCompatActivity() {
                         Log.e("SingleServiceActivity", "Error updating liked services: ${e.message}", e)
                         val errorMessage = if (bookmark) "Failed to save service." else "Failed to remove service."
                         Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                        checkBookmarkStatus()
                     }
             }
         }

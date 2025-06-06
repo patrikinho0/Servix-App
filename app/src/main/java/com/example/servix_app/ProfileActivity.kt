@@ -19,6 +19,7 @@ import com.example.servix_app.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
+import com.example.servix_app.LikedServicesActivity
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -77,6 +78,12 @@ class ProfileActivity : AppCompatActivity() {
         setupCustomBottomNav()
         loadUserInfo()
         setupButtonListeners()
+    }
+
+    private fun TextView.setBoldActive() {
+        setTypeface(null, Typeface.BOLD)
+        setTextColor(ContextCompat.getColor(this@ProfileActivity, R.color.black))
+        textSize = 14f
     }
 
     private fun setupCustomBottomNav() {
@@ -144,12 +151,6 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun TextView.setBoldActive() {
-        setTypeface(null, Typeface.BOLD)
-        setTextColor(ContextCompat.getColor(this@ProfileActivity, R.color.black))
-        textSize = 14f
-    }
-
     private fun loadUserInfo() {
         val user = FirebaseAuth.getInstance().currentUser ?: return
         val db = FirebaseFirestore.getInstance()
@@ -180,6 +181,7 @@ class ProfileActivity : AppCompatActivity() {
             auth.signOut()
             Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
 
         accountInfoButton.setOnClickListener {
@@ -198,8 +200,8 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         likedServicesButton.setOnClickListener {
-            startActivity(Intent(this, ServicesActivity::class.java)
-                .putExtra("selected_item_id", R.id.services))
+            val intent = Intent(this, LikedServicesActivity::class.java)
+            startActivity(intent)
         }
 
         becomeExpertButton.setOnClickListener {
