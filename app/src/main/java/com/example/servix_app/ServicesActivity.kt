@@ -83,7 +83,7 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
                 Log.d("ServicesActivity", "Adapter updated with ${announcements.size} services.")
             }
             .addOnFailureListener { exception ->
-                Log.e("ServicesActivity", "Error getting documents from Firestore: ", exception) // Changed to E for Error
+                Log.e("ServicesActivity", "Error getting documents from Firestore: ", exception)
             }
     }
 
@@ -113,7 +113,7 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
     override fun onResume() {
         super.onResume()
         Log.d("ServicesActivity", "onResume: Refreshing services data.")
-        loadServices() // Ensure data is refreshed when returning to the activity
+        loadServices()
     }
 
     private fun setupCustomBottomNav() {
@@ -137,7 +137,7 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
         }
 
         when (selectedItemId) {
-            R.id.home -> servicesText.setBoldActive() // This was homeText, should be servicesText for ServicesActivity if it's the current selected item
+            R.id.home -> servicesText.setBoldActive()
             R.id.services -> servicesText.setBoldActive()
             R.id.experts -> expertsText.setBoldActive()
             R.id.notifications -> notificationsText.setBoldActive()

@@ -101,11 +101,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "990693200314-vb10rfgddddui92rvttnd4h6rqq1737o.apps.googleusercontent.com",
+          "client_id": "990693200314-013f7kehuqnerkp3pu75fkbsjcemue8p.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.servix_app",
-            "certificate_hash": "61b44c1f85b43cc8b8e898c2dece24c8bbdf9a79"
+            "certificate_hash": "11deb6681f03fc9f196e786307eabe43fe44ca06"
           }
         },
         {

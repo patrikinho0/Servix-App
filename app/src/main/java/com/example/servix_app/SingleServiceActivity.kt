@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.EditText // Import EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -17,9 +18,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue // Import FieldValue for increment/decrement
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.Timestamp // Import Timestamp for comment timestamps
+import com.google.firebase.firestore.Query // Import Query for orderBy
 
 class SingleServiceActivity : AppCompatActivity() {
 
@@ -34,6 +37,12 @@ class SingleServiceActivity : AppCompatActivity() {
     private lateinit var bookmarkIcon: ImageView
 
     private lateinit var globalLikesTextView: TextView
+
+    private lateinit var commentsRecyclerView: RecyclerView
+    private lateinit var commentEditText: EditText
+    private lateinit var postCommentButton: Button
+    private lateinit var commentsAdapter: CommentAdapter
+    private val commentsList = mutableListOf<Comment>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +59,7 @@ class SingleServiceActivity : AppCompatActivity() {
         currentUserId = auth.currentUser?.uid
         Log.d("SingleServiceActivity", "Current User ID on onCreate: $currentUserId")
 
-        val recyclerView = findViewById<RecyclerView>(R.id.imageRecyclerView)
+        val imageRecyclerView = findViewById<RecyclerView>(R.id.imageRecyclerView)
         bookmarkIcon = findViewById<ImageView>(R.id.bookmarkIcon)
         val titleText = findViewById<TextView>(R.id.serviceTitle)
         val descText = findViewById<TextView>(R.id.serviceDescription)
@@ -61,6 +70,14 @@ class SingleServiceActivity : AppCompatActivity() {
         imageIndicatorContainer = findViewById(R.id.imageIndicatorContainer)
 
         globalLikesTextView = findViewById(R.id.list_item_likes)
+
+        commentsRecyclerView = findViewById(R.id.commentsRecyclerView)
+        commentEditText = findViewById(R.id.commentEditText)
+        postCommentButton = findViewById(R.id.postCommentButton)
+
+        commentsAdapter = CommentAdapter(commentsList)
+        commentsRecyclerView.layoutManager = LinearLayoutManager(this)
+        commentsRecyclerView.adapter = commentsAdapter
 
 
         val title = intent.getStringExtra("title") ?: ""
@@ -79,12 +96,12 @@ class SingleServiceActivity : AppCompatActivity() {
         locationText.text = location
 
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        recyclerView.layoutManager = layoutManager
-        recyclerView.adapter = ImageUrlAdapter(imageUrls)
+        imageRecyclerView.layoutManager = layoutManager
+        imageRecyclerView.adapter = ImageUrlAdapter(imageUrls)
 
         setupImageIndicator(imageUrls.size)
 
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        imageRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
@@ -133,7 +150,7 @@ class SingleServiceActivity : AppCompatActivity() {
                 .addOnFailureListener { e ->
                     authorText.text = "Author: Error"
                     contactButton.setOnClickListener {
-                        Toast.makeText(this@SingleServiceActivity, "No email app found on this device.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@SingleServiceActivity, "Failed to load author details.", Toast.LENGTH_SHORT).show()
                     }
                 }
         } else {
@@ -146,6 +163,7 @@ class SingleServiceActivity : AppCompatActivity() {
         if (currentUserId != null && serviceId != null) {
             checkBookmarkStatus()
             loadGlobalLikes()
+            loadComments()
             bookmarkIcon.setOnClickListener {
                 if (isBookmarked) {
                     showUnbookmarkConfirmationDialog()
@@ -153,10 +171,16 @@ class SingleServiceActivity : AppCompatActivity() {
                     showBookmarkConfirmationDialog()
                 }
             }
+
+            postCommentButton.setOnClickListener {
+                postComment()
+            }
         } else {
             bookmarkIcon.visibility = ImageView.GONE
-            Toast.makeText(this, "Login to save services.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Login to save services and comment.", Toast.LENGTH_LONG).show()
             globalLikesTextView.visibility = View.GONE
+            commentEditText.visibility = View.GONE
+            postCommentButton.visibility = View.GONE
         }
     }
 
@@ -267,7 +291,6 @@ class SingleServiceActivity : AppCompatActivity() {
 
                 db.runBatch { batch ->
                     batch.update(userDocRef, "likedServices", userUpdateOperation)
-
                     batch.update(serviceDocRef, "likes", globalLikesUpdateOperation)
                 }.addOnSuccessListener {
                     isBookmarked = bookmark
@@ -301,5 +324,85 @@ class SingleServiceActivity : AppCompatActivity() {
                     globalLikesTextView.text = "\u2764\ufe0f --"
                 }
         }
+    }
+
+    private fun loadComments() {
+        serviceId?.let { sId ->
+            db.collection("services").document(sId)
+                .collection("comments")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener { snapshots, e ->
+                    if (e != null) {
+                        Log.w("SingleServiceActivity", "Listen for comments failed.", e)
+                        Toast.makeText(this, "Error loading comments.", Toast.LENGTH_SHORT).show()
+                        return@addSnapshotListener
+                    }
+
+                    if (snapshots != null && !snapshots.isEmpty) {
+                        val newComments = ArrayList<Comment>()
+                        for (doc in snapshots.documents) {
+                            val comment = doc.toObject(Comment::class.java)
+                            comment?.let {
+                                it.id = doc.id
+                                newComments.add(it)
+                            }
+                        }
+                        commentsAdapter.setComments(newComments)
+                    } else if (snapshots != null && snapshots.isEmpty) {
+                        commentsAdapter.setComments(emptyList())
+                        Log.d("SingleServiceActivity", "No comments found for service $sId.")
+                    }
+                }
+        }
+    }
+
+    private fun postComment() {
+        val commentText = commentEditText.text.toString().trim()
+
+        if (commentText.isEmpty()) {
+            Toast.makeText(this, "Comment cannot be empty.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            Toast.makeText(this, "You need to be logged in to comment.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener { userDoc ->
+                val userName = userDoc.getString("name") ?: "Anonymous User"
+                val userProfilePictureUrl = userDoc.getString("profilePictureUrl") ?: ""
+                val userRole = userDoc.getString("role") ?: ""
+
+                serviceId?.let { sId ->
+                    val newComment = Comment(
+                        userId = userId,
+                        userName = userName,
+                        text = commentText,
+                        timestamp = Timestamp.now(),
+                        userProfilePictureUrl = userProfilePictureUrl,
+                        userRole = userRole
+                    )
+
+                    db.collection("services").document(sId)
+                        .collection("comments")
+                        .add(newComment)
+                        .addOnSuccessListener { documentReference ->
+                            Log.d("SingleServiceActivity", "Comment added with ID: ${documentReference.id}")
+                            commentEditText.text.clear()
+                            Toast.makeText(this, "Comment posted!", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("SingleServiceActivity", "Error adding comment", e)
+                            Toast.makeText(this, "Failed to post comment.", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("SingleServiceActivity", "Error fetching user info for comment: ${e.message}", e)
+                Toast.makeText(this, "Error getting user info. Cannot post comment.", Toast.LENGTH_SHORT).show()
+            }
     }
 }

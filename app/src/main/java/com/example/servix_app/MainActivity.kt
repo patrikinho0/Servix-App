@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
                 recommendedAdapter.updateData(recommendedList)
             }
             .addOnFailureListener { exception ->
-                Log.e("MainActivity", "Error loading recommended services: ", exception) // Changed to E for Error
+                Log.e("MainActivity", "Error loading recommended services: ", exception)
             }
     }
 
@@ -185,7 +185,7 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
                 serviceAdapter.updateData(servicesList)
             }
             .addOnFailureListener { exception ->
-                Log.e("MainActivity", "Error loading services: ", exception) // Changed to E for Error
+                Log.e("MainActivity", "Error loading services: ", exception)
             }
     }
 
@@ -208,7 +208,7 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
                 expertAdapter.updateData(expertsList)
             }
             .addOnFailureListener { exception ->
-                Log.e("MainActivity", "Error loading experts: ", exception) // Changed to E for Error
+                Log.e("MainActivity", "Error loading experts: ", exception)
             }
     }
 
