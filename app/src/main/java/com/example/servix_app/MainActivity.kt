@@ -3,7 +3,7 @@ package com.example.servix_app
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
-import android.util.Log
+import android.util.Log // Make sure Log is imported
 import android.view.View
 import android.widget.ImageView
 import android.widget.SearchView
@@ -53,9 +53,12 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
 
         selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
 
+        Log.d("MainActivity", "Attempting to load services (main)")
         loadServices(orderBy = "desc")
+        Log.d("MainActivity", "Attempting to load experts")
         loadExperts()
-        loadRecommendedServices() // This will also need the ID
+        Log.d("MainActivity", "Attempting to load recommended services")
+        loadRecommendedServices()
 
         setupFilterButton()
         setupCustomBottomNav()
@@ -122,19 +125,26 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
         db.collection("services")
             .get()
             .addOnSuccessListener { documents ->
+                Log.d("MainActivity", "loadRecommendedServices: Documents fetched. Size: ${documents.size()}")
                 recommendedList.clear()
                 for (document in documents) {
-                    val announcement = document.toObject(Announcement::class.java)
-                    announcement.id = document.id
-                    recommendedList.add(announcement)
+                    try {
+                        val announcement = document.toObject(Announcement::class.java)
+                        announcement.id = document.id
+                        recommendedList.add(announcement)
+                        Log.d("MainActivity", "loadRecommendedServices: Added ID: ${announcement.id}, Title: ${announcement.title}, Likes: ${announcement.likes}")
+                    } catch (e: Exception) {
+                        Log.e("MainActivity", "loadRecommendedServices: Error converting document ${document.id} to Announcement: ${e.message}", e)
+                    }
                 }
                 val randomServices = recommendedList.shuffled().take(2)
                 recommendedList.clear()
                 recommendedList.addAll(randomServices)
+                Log.d("MainActivity", "loadRecommendedServices: Displaying ${recommendedList.size} recommended services.")
                 recommendedAdapter.updateData(recommendedList)
             }
             .addOnFailureListener { exception ->
-                Log.w("MainActivity", "Error loading recommended services: ", exception)
+                Log.e("MainActivity", "Error loading recommended services: ", exception) // Changed to E for Error
             }
     }
 
@@ -159,16 +169,23 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
             .orderBy("date", if (orderBy == "desc") Query.Direction.DESCENDING else Query.Direction.ASCENDING)
             .get()
             .addOnSuccessListener { documents ->
+                Log.d("MainActivity", "loadServices: Documents fetched. Size: ${documents.size()}")
                 servicesList.clear()
                 for (document in documents) {
-                    val announcement = document.toObject(Announcement::class.java)
-                    announcement.id = document.id
-                    servicesList.add(announcement)
+                    try {
+                        val announcement = document.toObject(Announcement::class.java)
+                        announcement.id = document.id
+                        servicesList.add(announcement)
+                        Log.d("MainActivity", "loadServices: Added ID: ${announcement.id}, Title: ${announcement.title}, Likes: ${announcement.likes}")
+                    } catch (e: Exception) {
+                        Log.e("MainActivity", "loadServices: Error converting document ${document.id} to Announcement: ${e.message}", e)
+                    }
                 }
+                Log.d("MainActivity", "loadServices: Displaying ${servicesList.size} services.")
                 serviceAdapter.updateData(servicesList)
             }
             .addOnFailureListener { exception ->
-                Log.w("MainActivity", "Error loading services: ", exception)
+                Log.e("MainActivity", "Error loading services: ", exception) // Changed to E for Error
             }
     }
 
@@ -176,15 +193,22 @@ class MainActivity : AppCompatActivity(), OnServiceClickListener {
         db.collection("experts")
             .get()
             .addOnSuccessListener { documents ->
+                Log.d("MainActivity", "loadExperts: Documents fetched. Size: ${documents.size()}")
                 expertsList.clear()
                 for (document in documents) {
-                    val expert = document.toObject(Expert::class.java)
-                    expertsList.add(expert)
+                    try {
+                        val expert = document.toObject(Expert::class.java)
+                        expertsList.add(expert)
+                        Log.d("MainActivity", "loadExperts: Added ID: ${document.id}, Name: ${expert.name}")
+                    } catch (e: Exception) {
+                        Log.e("MainActivity", "loadExperts: Error converting document ${document.id} to Expert: ${e.message}", e)
+                    }
                 }
+                Log.d("MainActivity", "loadExperts: Displaying ${expertsList.size} experts.")
                 expertAdapter.updateData(expertsList)
             }
             .addOnFailureListener { exception ->
-                Log.w("MainActivity", "Error loading experts: ", exception)
+                Log.e("MainActivity", "Error loading experts: ", exception) // Changed to E for Error
             }
     }
 

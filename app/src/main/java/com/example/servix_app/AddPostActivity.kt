@@ -54,7 +54,7 @@ class AddPostActivity : AppCompatActivity() {
         imageRecyclerView.adapter = imageAdapter
 
         imageAdapter.setOnDeleteClickListener { position ->
-            Toast.makeText(this, "Image removed!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@AddPostActivity, "Image removed!", Toast.LENGTH_SHORT).show()
         }
 
         selectImagesButton.setOnClickListener {
@@ -118,7 +118,7 @@ class AddPostActivity : AppCompatActivity() {
                     val downloadUri = task.result
                     onSuccess(downloadUri.toString())
                 } else {
-                    Toast.makeText(this, "Image upload failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@AddPostActivity, "Image upload failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                     loadingDialog.dismiss()
                 }
             }
@@ -134,20 +134,21 @@ class AddPostActivity : AppCompatActivity() {
             "images" to imageUrls,
             "uid" to userId,
             "date" to Date(),
-            "category" to "service"
+            "category" to "service",
+            "likes" to 0
         )
 
         db.collection("services")
             .add(serviceData)
             .addOnSuccessListener {
                 loadingDialog.dismiss()
-                Toast.makeText(this, "Service added successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@AddPostActivity, "Service added successfully", Toast.LENGTH_SHORT).show()
                 setResult(RESULT_OK)
                 finish()
             }
             .addOnFailureListener { e ->
                 loadingDialog.dismiss()
-                Toast.makeText(this, "Failed to add service: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@AddPostActivity, "Failed to add service: ${e.message}", Toast.LENGTH_LONG).show()
             }
     }
 
@@ -168,10 +169,10 @@ class AddPostActivity : AppCompatActivity() {
                 selectedImages.add(imageUri)
                 imageAdapter.notifyItemInserted(oldSize)
             } else {
-                Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@AddPostActivity, "No image selected", Toast.LENGTH_SHORT).show()
             }
         } else {
-             Toast.makeText(this, "Image selection cancelled", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@AddPostActivity, "Image selection cancelled", Toast.LENGTH_SHORT).show()
         }
     }
 

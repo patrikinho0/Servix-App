@@ -10,7 +10,6 @@ import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-// Define an interface for click listener
 interface OnServiceClickListener {
     fun onServiceClick(announcement: Announcement)
 }
@@ -25,6 +24,7 @@ class MyAdapter(
         val title: TextView = itemView.findViewById(R.id.list_item_title)
         val location: TextView = itemView.findViewById(R.id.list_item_location)
         val date: TextView = itemView.findViewById(R.id.list_item_date)
+        val likesTextView: TextView = itemView.findViewById(R.id.list_item_likes)
 
         init {
             itemView.setOnClickListener {
@@ -44,7 +44,7 @@ class MyAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val announcement = announcements[position]
 
-        if (announcement.images.isNotEmpty()) {
+        if (announcement.images.isNotEmpty() && announcement.images[0] != null) {
             Picasso.get()
                 .load(announcement.images[0])
                 .placeholder(R.drawable.person)
@@ -60,7 +60,9 @@ class MyAdapter(
         holder.location.text = announcement.location
 
         val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-        holder.date.text = sdf.format(announcement.date?.toDate())
+        holder.date.text = announcement.date?.toDate()?.let { sdf.format(it) } ?: ""
+
+        holder.likesTextView.text = "${announcement.likes} \u2764\ufe0f"
     }
 
     override fun getItemCount(): Int = announcements.size

@@ -4,7 +4,7 @@ import android.content.Intent
 import android.graphics.Typeface
 import android.net.Uri // Import Uri for mailto
 import android.os.Bundle
-import android.util.Log
+import android.util.Log // Make sure Log is imported
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -28,12 +28,10 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
     private var selectedItemId: Int = R.id.services
     private val db = Firebase.firestore
 
-    // RecyclerView and Adapter properties
     private lateinit var myRecyclerView: RecyclerView
     private lateinit var myAdapter: MyAdapter
-    private val announcements = mutableListOf<Announcement>() // This will hold your data
+    private val announcements = mutableListOf<Announcement>()
 
-    // Define a request code for starting AddPostActivity
     private val ADD_SERVICE_REQUEST_CODE = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,57 +45,55 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
         }
 
         myRecyclerView = findViewById(R.id.servicesRecyclerView)
-        myAdapter = MyAdapter(announcements, this) // Pass the mutable list
+        myAdapter = MyAdapter(announcements, this)
         myRecyclerView.adapter = myAdapter
         myRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Initial load of services when the activity is created
+        Log.d("ServicesActivity", "Attempting to load services.")
         loadServices()
 
         val serviceButton: Button = findViewById(R.id.services_addService_button)
         serviceButton.setOnClickListener {
             val addServiceIntent = Intent(this, AddPostActivity::class.java)
-            // --- START ACTIVITY FOR RESULT ---
             startActivityForResult(addServiceIntent, ADD_SERVICE_REQUEST_CODE)
-            // --- END START ACTIVITY FOR RESULT ---
         }
 
         selectedItemId = intent.getIntExtra("selected_item_id", R.id.home)
         setupCustomBottomNav()
     }
 
-    // --- NEW METHOD: Encapsulate data fetching logic ---
     private fun loadServices() {
         db.collection("services")
             .orderBy("date", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { documents ->
-                announcements.clear() // Clear existing data
+                Log.d("ServicesActivity", "Firestore query successful. Documents fetched: ${documents.size()}")
+                announcements.clear()
                 for (document in documents) {
-                    val announcement = document.toObject(Announcement::class.java)
-                    announcement.id = document.id // Ensure ID is set
-                    announcements.add(announcement)
+                    try {
+                        val announcement = document.toObject(Announcement::class.java)
+                        announcement.id = document.id
+                        announcements.add(announcement)
+                        Log.d("ServicesActivity", "  - Converted document ${document.id}: Title='${announcement.title}', Likes=${announcement.likes}")
+                    } catch (e: Exception) {
+                        Log.e("ServicesActivity", "Error converting document ${document.id} to Announcement: ${e.message}", e)
+                    }
                 }
-                myAdapter.updateData(announcements) // Update adapter with new data
-                Log.d("ServicesActivity", "Services data loaded successfully. Count: ${announcements.size}")
+                myAdapter.updateData(announcements)
+                Log.d("ServicesActivity", "Adapter updated with ${announcements.size} services.")
             }
             .addOnFailureListener { exception ->
-                Log.w("ServicesActivity", "Error getting documents: ", exception)
+                Log.e("ServicesActivity", "Error getting documents from Firestore: ", exception) // Changed to E for Error
             }
     }
-    // --- END NEW METHOD ---
 
-    // --- OVERRIDE onActivityResult to handle result from AddPostActivity ---
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // Check if the request code matches and the result was successful (RESULT_OK)
         if (requestCode == ADD_SERVICE_REQUEST_CODE && resultCode == RESULT_OK) {
-            // A new service was successfully added, so refresh the list
             Log.d("ServicesActivity", "AddPostActivity returned RESULT_OK, refreshing services.")
             loadServices()
         }
     }
-    // --- END OVERRIDE onActivityResult ---
 
     override fun onServiceClick(announcement: Announcement) {
         val intent = Intent(this, SingleServiceActivity::class.java).apply {
@@ -114,14 +110,11 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
         startActivity(intent)
     }
 
-    // --- Add onResume() to ensure data refresh if navigating from other activities ---
     override fun onResume() {
         super.onResume()
-        // This ensures the services list is always fresh when the activity comes to the foreground.
-        // It's a good fallback even if onActivityResult also triggers it.
-        loadServices()
+        Log.d("ServicesActivity", "onResume: Refreshing services data.")
+        loadServices() // Ensure data is refreshed when returning to the activity
     }
-    // --- End onResume() ---
 
     private fun setupCustomBottomNav() {
         val navHome = findViewById<View>(R.id.navHome)
@@ -144,7 +137,7 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
         }
 
         when (selectedItemId) {
-            R.id.home -> homeText.setBoldActive()
+            R.id.home -> servicesText.setBoldActive() // This was homeText, should be servicesText for ServicesActivity if it's the current selected item
             R.id.services -> servicesText.setBoldActive()
             R.id.experts -> expertsText.setBoldActive()
             R.id.notifications -> notificationsText.setBoldActive()
@@ -159,9 +152,6 @@ class ServicesActivity : AppCompatActivity(), OnServiceClickListener {
         }
 
         navServices.setOnClickListener {
-            // No need to restart ServicesActivity if we are already in ServicesActivity
-            // unless there's a specific reason for it in your bottom nav logic.
-            // For refreshing, onResume/onActivityResult are sufficient.
             if (selectedItemId != R.id.services) {
                 startActivity(Intent(this, ServicesActivity::class.java)
                     .putExtra("selected_item_id", R.id.services))

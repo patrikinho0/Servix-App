@@ -17,7 +17,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FieldValue // Import FieldValue for increment/decrement
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -32,6 +32,8 @@ class SingleServiceActivity : AppCompatActivity() {
     private lateinit var imageIndicatorContainer: LinearLayout
     private lateinit var imageUrls: ArrayList<String>
     private lateinit var bookmarkIcon: ImageView
+
+    private lateinit var globalLikesTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +59,9 @@ class SingleServiceActivity : AppCompatActivity() {
         val contactButton = findViewById<Button>(R.id.contactButton)
         val authorText = findViewById<TextView>(R.id.serviceAuthor)
         imageIndicatorContainer = findViewById(R.id.imageIndicatorContainer)
+
+        globalLikesTextView = findViewById(R.id.list_item_likes)
+
 
         val title = intent.getStringExtra("title") ?: ""
         val description = intent.getStringExtra("description") ?: ""
@@ -128,7 +133,7 @@ class SingleServiceActivity : AppCompatActivity() {
                 .addOnFailureListener { e ->
                     authorText.text = "Author: Error"
                     contactButton.setOnClickListener {
-                        Toast.makeText(this, "Error fetching author details: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@SingleServiceActivity, "No email app found on this device.", Toast.LENGTH_SHORT).show()
                     }
                 }
         } else {
@@ -140,6 +145,7 @@ class SingleServiceActivity : AppCompatActivity() {
 
         if (currentUserId != null && serviceId != null) {
             checkBookmarkStatus()
+            loadGlobalLikes()
             bookmarkIcon.setOnClickListener {
                 if (isBookmarked) {
                     showUnbookmarkConfirmationDialog()
@@ -150,6 +156,7 @@ class SingleServiceActivity : AppCompatActivity() {
         } else {
             bookmarkIcon.visibility = ImageView.GONE
             Toast.makeText(this, "Login to save services.", Toast.LENGTH_LONG).show()
+            globalLikesTextView.visibility = View.GONE
         }
     }
 
@@ -197,7 +204,7 @@ class SingleServiceActivity : AppCompatActivity() {
                         if (documentSnapshot.exists()) {
                             val likedServices = documentSnapshot.get("likedServices") as? List<String>
                             isBookmarked = likedServices?.contains(sId) == true
-                            updateBookmarkIcon(isBookmarked) // Update icon directly
+                            updateBookmarkIcon(isBookmarked)
                         } else {
                             isBookmarked = false
                             updateBookmarkIcon(false)
@@ -212,6 +219,7 @@ class SingleServiceActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun updateBookmarkIcon(bookmarked: Boolean) {
         if (bookmarked) {
             bookmarkIcon.setImageResource(R.drawable.bookmark_ic_filled)
@@ -219,6 +227,7 @@ class SingleServiceActivity : AppCompatActivity() {
             bookmarkIcon.setImageResource(R.drawable.bookmark_ic)
         }
     }
+
     private fun showBookmarkConfirmationDialog() {
         AlertDialog.Builder(this)
             .setTitle("Save Service?")
@@ -246,26 +255,51 @@ class SingleServiceActivity : AppCompatActivity() {
             }
             .show()
     }
+
     private fun updateLikedServices(bookmark: Boolean) {
         currentUserId?.let { userId ->
             serviceId?.let { sId ->
                 val userDocRef = db.collection("users").document(userId)
-                val updateOperation = if (bookmark) FieldValue.arrayUnion(sId) else FieldValue.arrayRemove(sId)
+                val serviceDocRef = db.collection("services").document(sId)
 
-                userDocRef.update("likedServices", updateOperation)
-                    .addOnSuccessListener {
-                        isBookmarked = bookmark
-                        updateBookmarkIcon(isBookmarked)
-                        val message = if (bookmark) "Service saved!" else "Service removed from saved."
-                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("SingleServiceActivity", "Error updating liked services: ${e.message}", e)
-                        val errorMessage = if (bookmark) "Failed to save service." else "Failed to remove service."
-                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
-                        checkBookmarkStatus()
-                    }
+                val userUpdateOperation = if (bookmark) FieldValue.arrayUnion(sId) else FieldValue.arrayRemove(sId)
+                val globalLikesUpdateOperation = if (bookmark) FieldValue.increment(1) else FieldValue.increment(-1)
+
+                db.runBatch { batch ->
+                    batch.update(userDocRef, "likedServices", userUpdateOperation)
+
+                    batch.update(serviceDocRef, "likes", globalLikesUpdateOperation)
+                }.addOnSuccessListener {
+                    isBookmarked = bookmark
+                    updateBookmarkIcon(isBookmarked)
+                    val message = if (bookmark) "Service saved!" else "Service removed from saved."
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    loadGlobalLikes()
+                }.addOnFailureListener { e ->
+                    Log.e("SingleServiceActivity", "Error updating liked services: ${e.message}", e)
+                    val errorMessage = if (bookmark) "Failed to save service." else "Failed to remove service."
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                    checkBookmarkStatus()
+                }
             }
+        }
+    }
+
+    private fun loadGlobalLikes() {
+        serviceId?.let { sId ->
+            db.collection("services").document(sId).get()
+                .addOnSuccessListener { documentSnapshot ->
+                    if (documentSnapshot.exists()) {
+                        val likes = documentSnapshot.getLong("likes")?.toInt() ?: 0
+                        globalLikesTextView.text = "\u2764\ufe0f $likes"
+                    } else {
+                        globalLikesTextView.text = "\u2764\ufe0f 0"
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("SingleServiceActivity", "Error loading global likes: ${e.message}", e)
+                    globalLikesTextView.text = "\u2764\ufe0f --"
+                }
         }
     }
 }

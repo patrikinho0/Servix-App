@@ -10,5 +10,6 @@ data class Expert(
     val rating: Double = 0.0,
     val numberOfRatings: Int = 0,
     val profilePictureUrl: String = "",
-    val date: Timestamp? = null
+    val date: Timestamp? = null,
+    val category: String? = null
 )
