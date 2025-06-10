@@ -1,111 +1,124 @@
 # Servix - On-Demand Service Marketplace 🚀
 
-![Servix Logo](https://github.com/user-attachments/assets/13af8dfc-801f-4df1-b2a9-726d01103cef)
+![Servix Logo](https://github.com/user-attachments/assets/13af8dfc-801f-4df1-b2a9-726d01104cef)
 
-Servix connects users with local professionals for all kinds of services! Whether you need help moving furniture, fixing something around the house, or hiring a skilled expert, Servix makes it easy to find and hire someone nearby.
+**Servix** is your go-to mobile application for seamlessly connecting individuals with local professionals for a wide array of services. Whether you're looking for help moving furniture, need a quick fix around the house, or require a highly skilled expert for a specialized task, Servix simplifies the process of finding and hiring reliable assistance right in your neighborhood.
 
 ---
 
-## Features 🌟
+## Features ✨
+
+Servix is built with a focus on ease of use, security, and community trust.
 
 ### Core Functionality 🛠️
-- **User Authentication**  
-  Secure sign-up/login with **Firebase Authentication** (Email/Password).
-  
-- **Service Listings**  
-  Post, edit, or delete your service requests (e.g., "Need a plumber").
+* **User Authentication**: Enjoy secure and straightforward sign-up and login experiences powered by **Firebase Authentication** (Email/Password).
+* **Service Listings**: Effortlessly **post, edit, or delete** your service requests, such as "Need a plumber" or "Help with garden maintenance."
+* **Expert Profiles**: Professionals can create comprehensive profiles, detailing their **skills, areas of expertise, and accumulated ratings**, helping users make informed decisions.
+* **Search & Filter**: Quickly discover the perfect service or expert using intuitive search and filter options based on **category, location, or rating**.
+* **Liked Services**: Boost the visibility of service posts by "liking" them, ensuring popular requests get the attention they deserve.
+* **Account Deletion**: Users have full control with a simple option to permanently delete their accounts.
 
-- **Expert Profiles**  
-  Experts can create detailed profiles showcasing their skills, expertise, and ratings.
-
-- **Search & Filter**  
-  Quickly find services or experts by **category**, **location**, or **rating**.
-
-- **Reviews & Ratings**  
-  After service completion, rate and review experts to build trust within the community.
-
-- **Liked Services**  
-  Boost visibility by "liking" service posts.
-
-### Additional Features 🚀
-- **Reporting System**  
-  Flag inappropriate content or users to maintain a safe platform.
-
-- **Account Deletion**  
-  Permanently delete accounts with ease.
-
-- **Notifications** *(Coming Soon)*  
-  Stay up to date with Firebase Cloud Messaging (FCM) alerts.
-
-- **Google Maps Integration** *(Planned)*  
-  Use maps for location-based searches and navigation.
+### Planned Features 🚀
+* **Reviews & Ratings** *(Planned)*: After service completion, users will be able to **rate and review experts**, fostering transparency and building a trustworthy community.
+* **Reporting System** *(Planned)*: A system to maintain a safe and respectful platform by easily flagging inappropriate content or user behavior.
+* **Notifications** *(Coming Soon)*: Stay updated with real-time alerts for new requests, messages, and service updates via Firebase Cloud Messaging (FCM).
+* **Google Maps Integration** *(Planned)*: Enhance location-based searches and provide seamless navigation for service providers and users.
 
 ---
 
-## Tech Stack 🖥️
+## Tech Stack 💻
 
-- **Programming Language**: Kotlin  
-- **Backend**: Firebase  
-  - Authentication  
-  - Firestore (NoSQL database)  
-  - Storage (for user and service images)  
+Servix is developed using modern and robust technologies to ensure a smooth and scalable experience.
 
----
-
-## Firestore Database Structure 🗂️
-
-| Collection       | Key Fields                                                                 |
-|------------------|---------------------------------------------------------------------------|
-| **Users**        | `id`, `name`, `email`, `profilePictureUrl`, `role` ("user" or "expert")   |
-| **Experts**      | `userId`, `expertise`, `rating`, `profileDescription`                     |
-| **Announcements**| `userId`, `title`, `description`, `location`, `status`, `imageUrls`       |
-| **Reviews**      | `announcementId`, `expertId`, `reviewerId`, `rating`, `comment`          |
-| **Notifications**| `recipientId`, `message`, `timestamp` *(Planned)*                        |
+* **Programming Language**: **Kotlin** – A concise, safe, and interoperable language for Android development.
+* **Backend**: **Firebase** – Google's comprehensive mobile development platform, providing:
+    * **Authentication**: Secure user identity management.
+    * **Firestore**: A flexible, scalable NoSQL cloud database for storing and syncing data.
+    * **Storage**: For reliable storage and retrieval of user and service-related images.
 
 ---
 
-## UML Diagram (Data Model) 📊  
-![SERVIX-UML-DIAGRAM-PNG](https://github.com/user-attachments/assets/1af5f6ae-49a2-4b37-94e6-ac6863d9d0bc)
+## Firestore Database Structure 🗄️
+
+Understanding the underlying data model is crucial for contributors. Other needed collections will be added in the future. 
+Here's how Servix currently organizes its data in Firestore:
+
+| Collection        | Key Fields                                                                                             | Description                                                                                             |
+| :---------------- | :----------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| `Users`           | `email`, `likedServices` (array of service UIDs), `name`, `profilePictureUrl`, `role`, `uid`           | Stores essential user information, including their email, display name, profile picture, role (`user`), and a list of liked services. |
+| `Services`        | `comments` (array), `category`, `date` (timestamp), `description`, `images` (array of URLs), `likes`, `location`, `title`, `uid` (of poster) | Represents individual service requests or announcements. Includes details like content, associated images, location, and tracking for likes and comments. |
+| `Experts`         | `category` (e.g., "expert"), `date` (timestamp), `description`, `expertise`, `name`, `numberOfRatings`, `profilePictureUrl`, `rating`, `uid` | Contains specific details for users who have registered as experts, including their specialized skills, self-description, and current rating. |
 
 ---
 
-## Installation ⚙️
+## Data Model (UML Diagram) 📊
+
+For a visual representation of the Servix data relationships, refer to the UML diagram below:
+
+![SERVIX-UML-DIAGRAM-PNG](https://github.com/user-attachments/assets/1af5f6ae-49a2-4b37-94e6-ac6863d3d0bc)
+
+---
+
+## Installation Guide ⚙️
+
+Ready to get Servix up and running on your local machine? Follow these simple steps.
 
 ### Prerequisites 📋
-- Android Studio (latest version)
-- Firebase project with **Authentication** and **Firestore** enabled.
+Before you begin, ensure you have the following:
+
+* **Android Studio (latest version)**: Download and install the latest stable release.
+* **Firebase Project**: A configured Firebase project with **Authentication** (Email/Password provider enabled) and **Firestore** database activated.
 
 ### Setup Steps 📝
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/yourusername/servix-android.git
-
-2. Open the project in Android Studio.
-3. Add your **google-services.json** file (from Firebase) to **app/**.
-4. Build and run the app on an emulator or device.
+1.  **Clone the repository**:
+    ```sh
+    git clone [https://github.com/yourusername/servix-android.git](https://github.com/yourusername/servix-android.git)
+    cd servix-android
+    ```
+2.  **Open in Android Studio**:
+    Launch Android Studio and open the cloned `servix-android` project.
+3.  **Add `google-services.json`**:
+    Download your `google-services.json` file from your Firebase project settings and place it directly into the **`app/`** directory of your cloned project. This file is crucial for connecting your app to Firebase.
+4.  **Build and Run**:
+    Sync your Gradle files, then build and run the application on an Android emulator or a physical device.
 
 ---
 
-### **Part 4: Screenshots & Contributing**
+## Screenshots 📸
 
-## Screenshots 📸 *(Coming soon)*
+*(Coming soon!)* Here's a glimpse of the Servix user interface:
+
 | Login Screen | Service Feed | Expert Profile |
-|--------------|--------------|----------------|
-| ![Login](https://via.placeholder.com/200) | ![Feed](https://via.placeholder.com/200) | ![Profile](https://via.placeholder.com/200) |
+| :----------- | :----------- | :------------- |
+| ![Login](https://via.placeholder.com/200/0000FF/FFFFFF?text=Login+Screen) | ![Feed](https://via.placeholder.com/200/008000/FFFFFF?text=Service+Feed) | ![Profile](https://via.placeholder.com/200/FF0000/FFFFFF?text=Expert+Profile) |
 
 ---
 
 ## Contributing 🤝
-1. Fork the project.  
-2. Create a branch (`git checkout -b feature/your-feature`).  
-3. Commit changes (`git commit -m 'Add some feature'`).  
-4. Push to the branch (`git push origin feature/your-feature`).  
-5. Open a Pull Request.  
+
+We welcome contributions to Servix! If you're interested in making this project even better, please follow these guidelines:
+
+1.  **Fork the project**.
+2.  **Create a new branch**:
+    ```sh
+    git checkout -b feature/your-awesome-feature
+    ```
+3.  **Commit your changes**:
+    ```sh
+    git commit -m 'feat: Add a concise description of your new feature'
+    ```
+    *(Tip: Use conventional commits for clear history, e.g., `feat:`, `fix:`, `docs:`, `chore:`)*
+4.  **Push to your branch**:
+    ```sh
+    git push origin feature/your-awesome-feature
+    ```
+5.  **Open a Pull Request**:
+    Submit a detailed Pull Request to the `main` branch of this repository. Please describe your changes thoroughly.
 
 ---
 
-**Questions?** 🤔
-Contact [patryk61222@gmail.com] or open an issue in the repository.
+**Questions or Feedback?** 🤔
+Feel free to reach out to [patryk61222@gmail.com] or open an issue directly in this repository. Your input is highly valued!
 
 <br><br>
 <p align="center">Made by patrikinho with ❤️</p>
